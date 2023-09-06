@@ -1,0 +1,4 @@
+colorama == 0.4.6
+prettytable == 3.8.0
+ask_question == 1.2.0
+colourise-output == 1.1.0
