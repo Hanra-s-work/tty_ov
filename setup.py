@@ -1,10 +1,10 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8", newline="\n") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='tty_ov',  
+    name='tty-ov',
     version='1.0.0',
     packages=setuptools.find_packages(),
     install_requires=[

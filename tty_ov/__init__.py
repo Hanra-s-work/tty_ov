@@ -1,7 +1,7 @@
 """
 File in charge of easing the import of the program
 """
-from .tty import TTY
+from .tty_ov import TTY
 
 
 class TTY_OV(TTY):
