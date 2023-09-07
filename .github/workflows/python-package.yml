@@ -48,7 +48,7 @@ jobs:
     - name: Build and publish to PyPI
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build
         pip install twine
         twine upload dist/*
       env:
