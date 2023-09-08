@@ -1,4 +1,4 @@
-name: tty-ov
+name: tty-ov-pypi
 
 on:
   push:
