@@ -49,6 +49,7 @@ jobs:
           echo "is_release=$is_release" >> $GITHUB_ENV
           echo -e "\n\n\n\n\n\n\n\n\n"
           echo "github_env = $GITHUB_ENV"
+          echo "cat github_env = $(cat $GITHUB_ENV)"
           echo "Is_release = $is_release"
           echo "env.Is_release = ${{env.is_release}}"
           echo -e "\n\n\n\n\n\n\n\n\n"
@@ -71,6 +72,7 @@ jobs:
           fi
           echo -e "\n\n\n\n\n\n\n\n\n"
           echo "github_env = $GITHUB_ENV"
+          echo "cat github_env = $(cat $GITHUB_ENV)"
           echo "new_tag = $new_tag"
           echo "env.new_tag = ${{env.new_tag}}"
           echo -e "\n\n\n\n\n\n\n\n\n"
@@ -80,14 +82,14 @@ jobs:
           then
             echo "Updating version in ${{env.SETUP_FILE}}"
             echo -e "\n\n\n\n\n\n\n\n\n"
-            echo "Tag: ${{ steps.increment_tag.outputs.new_tag }}"
+            echo "Tag: $new_tag"
             echo -e "\n\n\n\n\n\n\n\n\n"
-            # sed -i "s/version='.*'/version='${{ steps.increment_tag.outputs.new_tag }}'/g" ${{env.SETUP_FILE}}
+            # sed -i "s/version='.*'/version='$new_tag'/g" ${{env.SETUP_FILE}}
           fi
       - name: Save module version
         run: |
-          echo "${{ steps.increment_tag.outputs.new_tag }}" > ${{env.TAG_FILE}}
-          echo "New Tag: ${{ steps.increment_tag.outputs.new_tag }}"
+          echo "$new_tag" > ${{env.TAG_FILE}}
+          echo "New Tag: $new_tag"
           echo -e "\n\n\n\n\n\n\n\n\n"
           echo "Content: $(ls)"
           echo -e "\n\n\n\n\n\n\n\n\n"
