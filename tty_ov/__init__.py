@@ -2,6 +2,18 @@
 File in charge of easing the import of the program
 """
 from .tty_ov import TTY
+from .tty_ov import ColouriseOutput as CO
+from .tty_ov import AskQuestion as AQ
+
+
+class ColouriseOutput(CO):
+    """ A rebind of the same library to help you access the ressources """
+    pass
+
+
+class AskQuestion(AQ):
+    """ A rebind of the same library to help you access the ressources """
+    pass
 
 
 class TTY_OV(TTY):
