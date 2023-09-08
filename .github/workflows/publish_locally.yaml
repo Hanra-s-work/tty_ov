@@ -56,4 +56,4 @@ jobs:
       with:
         files: dist/*  # Replace with the path to your release artifacts
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_GH }}
+        GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
