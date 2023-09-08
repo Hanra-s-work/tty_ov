@@ -7,15 +7,9 @@ import stat
 import time
 import locale
 import shutil
-try:
-    from .colourise_output import ColouriseOutput
-except Exception:
-    from colourise_output import ColouriseOutput
-try:
-    from .ask_question import AskQuestion
-except Exception:
-    from ask_question import AskQuestion
 from prettytable import PrettyTable
+from ask_question import AskQuestion
+from colourise_output import ColouriseOutput
 
 
 class HLLs:
@@ -1541,6 +1535,27 @@ Output:
                 "desc": "Remove a directory if present in the path"},
         ]
 
+    def unload_basics(self) -> int:
+        """ Free the ressources that were previously allocated """
+        self.old_pwd = ""
+        self.home = ""
+        self.reset_colour = None
+        self.prompt_colour = None
+        self.default_colour = None
+        self.error_colour = None
+        self.success_colour = None
+        self.info_colour = None
+        self.help_title_colour = None
+        self.help_command_colour = None
+        self.help_description_colour = None
+        self.env_term_colour = None
+        self.env_shell_colour = None
+        self.env_definition_colour = None
+        self.session_name_colour = None
+        self.tty_colours = None
+        self.options = []
+        return self.colour_lib.unload_ressources()
+
     def import_functions_into_shell(self, functions: list[dict[str, any]]) -> int:
         """ Import functions into the shell """
         for function in functions:
@@ -1641,4 +1656,4 @@ if __name__ == "__main__":
     )
     TTYI.load_basics()
     TTYI.mainloop("Test session")
-    COLOUR_LIB.unload_ressources()
+    TTYI.unload_basics()
