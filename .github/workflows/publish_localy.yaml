@@ -27,9 +27,16 @@ jobs:
       - name: Get Latest Tag
         id: get_latest_tag
         run: |
-          latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
-          echo "Latest Tag: $latest_tag"
-          echo "::set-output name=latest_tag::$latest_tag"
+          if git tag --list 'v*'; then
+            latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
+            echo "Latest Tag: $latest_tag"
+            echo "::set-output name=latest_tag::$latest_tag"
+          else
+            echo "No tags found matching 'v*'."
+            latest_tag=v1.0.0
+            echo "Using a default tag: $latest_tag"
+            echo "::set-output name=latest_tag::$latest_tag"
+          fi
 
       - name: Check if Latest Tag is a Release
         id: is_release
