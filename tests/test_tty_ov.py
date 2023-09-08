@@ -1,7 +1,13 @@
-# tests/test_ask_question.py
-import unittest.mock
+# tests/test_tty_ov.py
 from sys import stderr
-from tty_ov import TTY, ColouriseOutput, AskQuestion
+from tty_ov import TTY
+from tty_ov import ColouriseOutput
+from tty_ov import AskQuestion
+
+# print(f"(module help) = {help('modules')}")
+# print(f"(help: TTY) = {help(TTY)}")
+# print(f"(help: ColouriseOutput) = {help(ColouriseOutput)}")
+# print(f"(help: AskQuestion) = {help(AskQuestion)}")
 
 ERR = 84
 ERROR = ERR
@@ -35,6 +41,7 @@ def print_debug(string: str = "") -> None:
 
 
 def test_get_author() -> None:
+    """ Get the name of the author of the program """
     TTYI = TTY(
         ERR,
         ERROR,
@@ -44,11 +51,15 @@ def test_get_author() -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
+    TTYI.load_basics()
     response = TTYI.author([])
     print_debug(f"response = {response}")
+    TTYI.unload_basics()
     assert response == TTYI.success
 
+
 def test_get_version() -> None:
+    """ Get the version of the library """
     TTYI = TTY(
         ERR,
         ERROR,
@@ -58,7 +69,8 @@ def test_get_version() -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
+    TTYI.load_basics()
     response = TTYI.version([])
     print_debug(f"response = {response}")
+    TTYI.unload_basics()
     assert response == TTYI.success
-
