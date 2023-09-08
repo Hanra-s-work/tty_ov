@@ -4,14 +4,14 @@ with open("README.md", "r", encoding="utf-8", newline="\n") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='tty-ov',
+    name='tty_ov',
     version='1.0.0',
     packages=setuptools.find_packages(),
     install_requires=[
         "colorama==0.4.6",
         "prettytable==3.8.0",
-        "ask_question==1.2.0",
-        "colourise-output==1.1.0",
+        "ask_question>=1.2.0",
+        "colourise-output>=1.1.1",
     ],
     author="Henry Letellier",
     author_email="henrysoftwarehouse@protonmail.com",
