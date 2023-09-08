@@ -33,10 +33,10 @@ jobs:
             echo "No tags found matching 'v*'."
             latest_tag=v1.0.0
             echo "Using a default tag: $latest_tag"
-            echo "::set-output name=latest_tag::$latest_tag"
+            echo "name=latest_tag" >> $GITHUB_ENV
           else
             echo "Latest Tag: $latest_tag"
-            echo "::set-output name=latest_tag::$latest_tag"
+            echo "name=latest_tag" >> $GITHUB_ENV
           fi
 
       - name: Check if Latest Tag is a Release
@@ -78,6 +78,9 @@ jobs:
         run: |
           echo "${{ steps.increment_tag.outputs.new_tag }}" > ${{env.TAG_FILE}}
           echo "New Tag: ${{ steps.increment_tag.outputs.new_tag }}"
+          echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "Content: $(ls)"
+          echo -e "\n\n\n\n\n\n\n\n\n"
 
   build:
     needs: increment-the-tag
