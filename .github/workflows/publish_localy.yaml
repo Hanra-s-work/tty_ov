@@ -35,9 +35,9 @@ jobs:
         id: is_release
         run: |
           if [[ $latest_tag == "v"* ]]; then
-            echo "::set-output name=is_release::true"
+            echo "is_release=true" >> $GITHUB_ENV
           else
-            echo "::set-output name=is_release::false"
+            echo "is_release=false" >> $GITHUB_ENV
           fi
 
       - name: Increment Tag Version
@@ -71,105 +71,105 @@ jobs:
           echo "${{ steps.increment_tag.outputs.new_tag }}" > ${{env.TAG_FILE}}
           echo "New Tag: ${{ steps.increment_tag.outputs.new_tag }}"
 
-  # build:
-  #   needs: increment-the-tag
-  #   if: success()
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       python-version: ["3.9", "3.10", "3.11"] # ["3.10"]
+  build:
+    needs: increment-the-tag
+    if: success()
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"] # ["3.10"]
 
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v3
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
       
-  #   - name: Set up Python ${{ matrix.python-version }}
-  #     uses: actions/setup-python@v3
-  #     with:
-  #       python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
 
-  #   - name: Get non published python packages
-  #     run: |
-  #       git clone "https://github.com/Hanra-s-work/ask_question.git" aq
-  #       git clone "https://github.com/Hanra-s-work/colourise_output.git" co
-  #       echo "Content: $(ls)"
-  #       echo -e "\n\n\n\n\n\n\n\n\n"
+    - name: Get non published python packages
+      run: |
+        git clone "https://github.com/Hanra-s-work/ask_question.git" aq
+        git clone "https://github.com/Hanra-s-work/colourise_output.git" co
+        echo "Content: $(ls)"
+        echo -e "\n\n\n\n\n\n\n\n\n"
     
-  #   - name: Building dependencies
-  #     run: |
-  #       FOLDERS="aq co"
-  #       echo -e "\n\n\n\n\n\n\n"
-  #       echo "FOLDERS = $FOLDERS"
-  #       echo -e "\n\n\n\n\n\n\n"
-  #       echo "Installing build"
-  #       pip install build
-  #       echo "looping through"
-  #       for elem in $FOLDERS
-  #       do
-  #         echo -e "\n\n\n\n\n\n\n"
-  #         echo "Entering $elem"
-  #         cd "$elem"
-  #         echo "Checking if requirements in $elem"
-  #         if [ -f requirements.txt ]
-  #         then
-  #           echo "Installing requirements $elem"
-  #           pip install -r requirements.txt
-  #         fi
-  #         echo "Building $elem"
-  #         python -m build
-  #         echo "Entering dist"
-  #         cd dist
-  #         echo "Content: $(ls)"
-  #         echo "Locating a package"
-  #         PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
-  #         echo -e "\n\n\n\n\n\n\n"
-  #         echo "Package found: $PIP_PACKAGE"
-  #         echo -e "\n\n\n\n\n\n\n"
-  #         pip install "$PIP_PACKAGE"
-  #         cd ../..
-  #       done
-  #       echo -e "\n\n\n\n\n\n\n"
-  #       pip list
-  #       echo -e "\n\n\n\n\n\n\n"
-  #       echo "Content: $(ls)"
+    - name: Building dependencies
+      run: |
+        FOLDERS="aq co"
+        echo -e "\n\n\n\n\n\n\n"
+        echo "FOLDERS = $FOLDERS"
+        echo -e "\n\n\n\n\n\n\n"
+        echo "Installing build"
+        pip install build
+        echo "looping through"
+        for elem in $FOLDERS
+        do
+          echo -e "\n\n\n\n\n\n\n"
+          echo "Entering $elem"
+          cd "$elem"
+          echo "Checking if requirements in $elem"
+          if [ -f requirements.txt ]
+          then
+            echo "Installing requirements $elem"
+            pip install -r requirements.txt
+          fi
+          echo "Building $elem"
+          python -m build
+          echo "Entering dist"
+          cd dist
+          echo "Content: $(ls)"
+          echo "Locating a package"
+          PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
+          echo -e "\n\n\n\n\n\n\n"
+          echo "Package found: $PIP_PACKAGE"
+          echo -e "\n\n\n\n\n\n\n"
+          pip install "$PIP_PACKAGE"
+          cd ../..
+        done
+        echo -e "\n\n\n\n\n\n\n"
+        pip list
+        echo -e "\n\n\n\n\n\n\n"
+        echo "Content: $(ls)"
         
-  #   - name: Install dependencies
-  #     run: |
-  #       python -m pip install --upgrade pip
-  #       python -m pip install flake8 pytest
-  #       lib_packages=$(find ./*/ -name "requirements.txt" -type f)
-  #       first_requirement=$(echo $lib_packages | cut -d " " -f 1)
-  #       if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-  #       if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install flake8 pytest
+        lib_packages=$(find ./*/ -name "requirements.txt" -type f)
+        first_requirement=$(echo $lib_packages | cut -d " " -f 1)
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
 
-  #   - name: Lint with flake8
-  #     run: |
-  #       # stop the build if there are Python syntax errors or undefined names
-  #       flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-  #       # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-  #       flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
         
-  #   - name: building the package
-  #     run: |
-  #       pip install build
-  #       python -m build
+    - name: building the package
+      run: |
+        pip install build
+        python -m build
     
-  #   - name: Remove repositories
-  #     run: |
-  #       rm -rvf aq co
+    - name: Remove repositories
+      run: |
+        rm -rvf aq co
     
-  #   - name: Installing the package
-  #     run: |
-  #       PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
-  #       echo -e "\n\n\n\n\n\n\n"
-  #       echo "Package found: $PIP_PACKAGE"
-  #       echo -e "\n\n\n\n\n\n\n"
-  #       pip install "$PIP_PACKAGE"
+    - name: Installing the package
+      run: |
+        PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
+        echo -e "\n\n\n\n\n\n\n"
+        echo "Package found: $PIP_PACKAGE"
+        echo -e "\n\n\n\n\n\n\n"
+        pip install "$PIP_PACKAGE"
 
-  #   - name: Test with pytest
-  #     run: |
-  #       pytest
+    - name: Test with pytest
+      run: |
+        pytest
 
 
   # publish-tag:
