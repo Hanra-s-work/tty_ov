@@ -15,7 +15,7 @@ env:
 
 jobs:
 
-  increment-tag:
+  increment-the-tag:
     runs-on: ubuntu-latest
 
     steps:
@@ -70,12 +70,13 @@ jobs:
           echo "New Tag: ${{ steps.increment_tag.outputs.new_tag }}"
 
   build:
-    needs: increment-tag
+    needs: increment-the-tag
+    if: success()
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"] # ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"] # ["3.10"]
 
     steps:
     - name: Checkout code
@@ -92,6 +93,7 @@ jobs:
         git clone "https://github.com/Hanra-s-work/colourise_output.git" co
         echo "Content: $(ls)"
         echo -e "\n\n\n\n\n\n\n\n\n"
+    
     - name: Building dependencies
       run: |
         FOLDERS="aq co"
