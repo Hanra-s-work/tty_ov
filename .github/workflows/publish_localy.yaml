@@ -27,14 +27,15 @@ jobs:
       - name: Get Latest Tag
         id: get_latest_tag
         run: |
-          if git tag --list 'v*'; then
-            latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
-            echo "Latest Tag: $latest_tag"
-            echo "::set-output name=latest_tag::$latest_tag"
-          else
+          git fetch --tags # Make sure to fetch the tags first
+          latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
+          if [ -z "$latest_tag" ]; then
             echo "No tags found matching 'v*'."
             latest_tag=v1.0.0
             echo "Using a default tag: $latest_tag"
+            echo "::set-output name=latest_tag::$latest_tag"
+          else
+            echo "Latest Tag: $latest_tag"
             echo "::set-output name=latest_tag::$latest_tag"
           fi
 
@@ -179,23 +180,23 @@ jobs:
         pytest
 
 
-  # publish-tag:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-  #     # Add the following steps if you want to publish to GitHub Releases
-  #     - name: Get version
-  #       run: |
-  #         new_tag=$(cat ${{env.TAG_FILE}})
-  #         echo "New Tag: $new_tag"
-  #         echo "::set-output name=new_tag::$new_tag"
-  #     - name: Build and publish as GitHub release
-  #       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         files: dist/*  # Replace with the path to your release artifacts
-  #         tag_name: $new_tag
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
+  publish-tag:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      # Add the following steps if you want to publish to GitHub Releases
+      - name: Get version
+        run: |
+          new_tag=$(cat ${{env.TAG_FILE}})
+          echo "New Tag: $new_tag"
+          echo "::set-output name=new_tag::$new_tag"
+      - name: Build and publish as GitHub release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*  # Replace with the path to your release artifacts
+          tag_name: $new_tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
