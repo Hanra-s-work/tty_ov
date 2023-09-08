@@ -9,9 +9,68 @@ on:
       - main
   workflow_dispatch:
 
-jobs:
-  build:
+env:
+  TAG_FILE: version.txt
+  SETUP_FILE: setup.py
 
+jobs:
+
+  increment-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Latest Tag
+        id: get_latest_tag
+        run: |
+          latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
+          echo "Latest Tag: $latest_tag"
+          echo "::set-output name=latest_tag::$latest_tag"
+
+      - name: Check if Latest Tag is a Release
+        id: is_release
+        run: |
+          if [[ $latest_tag == "v"* ]]; then
+            echo "::set-output name=is_release::true"
+          else
+            echo "::set-output name=is_release::false"
+          fi
+
+      - name: Increment Tag Version
+        id: increment_tag
+        run: |
+          is_release="$GITHUB_REF"
+          if [[ $is_release == "true" ]]; then
+            # Parse the latest tag and increment the version component you want
+            # Example: Convert "v1.2.3" to "v1.2.4"
+            new_tag="${latest_tag/v/}"  # Remove the leading "v"
+            IFS='.' read -ra version <<< "$new_tag"
+            ((version[2]++))  # Increment the third version component
+            new_tag="v${version[0]}.${version[1]}.${version[2]}"
+            echo "New Tag: $new_tag"
+            echo "::set-output name=new_tag::$new_tag"
+          else
+            echo "Latest tag is not a release. Skipping tag increment."
+          fi
+      - name: Update module version
+        run: |
+          if [ -f ${{env.SETUP_FILE}} ]
+          then
+            echo "Updating version in ${{env.SETUP_FILE}}"
+            echo -e "\n\n\n\n\n\n\n\n\n"
+            echo "Tag: ${{ steps.increment_tag.outputs.new_tag }}"
+            echo -e "\n\n\n\n\n\n\n\n\n"
+            # sed -i "s/version='.*'/version='${{ steps.increment_tag.outputs.new_tag }}'/g" ${{env.SETUP_FILE}}
+          fi
+      - name: Save module version
+        run: |
+          echo "${{ steps.increment_tag.outputs.new_tag }}" > ${{env.TAG_FILE}}
+          echo "New Tag: ${{ steps.increment_tag.outputs.new_tag }}"
+
+  build:
+    needs: increment-tag
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -79,8 +138,7 @@ jobs:
         first_requirement=$(echo $lib_packages | cut -d " " -f 1)
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
-        
-        
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -109,48 +167,19 @@ jobs:
       run: |
         pytest
 
-  increment-tag:
+
+  publish-tag:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Get Latest Tag
-        id: get_latest_tag
-        run: |
-          latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
-          echo "Latest Tag: $latest_tag"
-          echo "::set-output name=latest_tag::$latest_tag"
-
-      - name: Check if Latest Tag is a Release
-        id: is_release
-        run: |
-          if [[ $latest_tag == "v"* ]]; then
-            echo "::set-output name=is_release::true"
-          else
-            echo "::set-output name=is_release::false"
-          fi
-
-      - name: Increment Tag Version
-        id: increment_tag
-        run: |
-          is_release="$GITHUB_REF"
-          if [[ $is_release == "true" ]]; then
-            # Parse the latest tag and increment the version component you want
-            # Example: Convert "v1.2.3" to "v1.2.4"
-            new_tag="${latest_tag/v/}"  # Remove the leading "v"
-            IFS='.' read -ra version <<< "$new_tag"
-            ((version[2]++))  # Increment the third version component
-            new_tag="v${version[0]}.${version[1]}.${version[2]}"
-            echo "New Tag: $new_tag"
-            echo "::set-output name=new_tag::$new_tag"
-          else
-            echo "Latest tag is not a release. Skipping tag increment."
-          fi
-
       # Add the following steps if you want to publish to GitHub Releases
+      - name: Get version
+        run: |
+          new_tag=$(cat ${{env.TAG_FILE}})
+          echo "New Tag: $new_tag"
+          echo "::set-output name=new_tag::$new_tag"
       - name: Build and publish as GitHub release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
