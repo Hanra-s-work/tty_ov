@@ -33,20 +33,25 @@ jobs:
             echo "No tags found matching 'v*'."
             latest_tag=v1.0.0
             echo "Using a default tag: $latest_tag"
-            echo "name=latest_tag" >> $GITHUB_ENV
+            echo "name=$latest_tag" >> $GITHUB_ENV
           else
             echo "Latest Tag: $latest_tag"
-            echo "name=latest_tag" >> $GITHUB_ENV
+            echo "name=$latest_tag" >> $GITHUB_ENV
           fi
 
       - name: Check if Latest Tag is a Release
         id: is_release
         run: |
+          is_release=false
           if [[ $latest_tag == "v"* ]]; then
-            echo "is_release=true" >> $GITHUB_ENV
-          else
-            echo "is_release=false" >> $GITHUB_ENV
+            is_release=true
           fi
+          echo "is_release=$is_release" >> $GITHUB_ENV
+          echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "github_env = $GITHUB_ENV"
+          echo "Is_release = $is_release"
+          echo "env.Is_release = ${{env.is_release}}"
+          echo -e "\n\n\n\n\n\n\n\n\n"
 
       - name: Increment Tag Version
         id: increment_tag
@@ -60,10 +65,15 @@ jobs:
             ((version[2]++))  # Increment the third version component
             new_tag="v${version[0]}.${version[1]}.${version[2]}"
             echo "New Tag: $new_tag"
-            echo "::set-output name=new_tag::$new_tag"
+            echo "name=$new_tag" >> $GITHUB_ENV
           else
             echo "Latest tag is not a release. Skipping tag increment."
           fi
+          echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "github_env = $GITHUB_ENV"
+          echo "new_tag = $new_tag"
+          echo "env.new_tag = ${{env.new_tag}}"
+          echo -e "\n\n\n\n\n\n\n\n\n"
       - name: Update module version
         run: |
           if [ -f ${{env.SETUP_FILE}} ]
