@@ -206,6 +206,6 @@ jobs:
           tag_description="Bump version to $tag_version"
           echo "Tag description: $tag_description"
           echo "Creating tag"
-          git tag -a $tag_version -m $tag_description
+          git tag -a "$tag_version" -m "$tag_description"
           echo "Publishing tag"
           git push origin $tag_version
