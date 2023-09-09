@@ -197,11 +197,12 @@ jobs:
         run: |
           echo "Python version: $(python --version)"
           echo "Matrix version: ${{matrix.python-version}}"
-      - name: Build and publish as GitHub release
+      - name: Publish as GitHub release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dist/*  # Replace with the path to your release artifacts
-          tag_name: "$(cat ${{env.TAG_FILE}})"
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
+        run: |
+          echo "Publishing ${{env.TAG_FILE}} as a GitHub release"
+          tag_version=$(cat ${{env.TAG_FILE}})
+          echo "Tag version: $tag_version"
+          tag_description="Bump version to $tag_version"
+          git tag add -a $tag_version -m $tag_description
+          git push origin $tag_version
