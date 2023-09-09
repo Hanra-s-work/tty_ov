@@ -38,6 +38,11 @@ jobs:
             echo "Latest Tag: $latest_tag"
           fi
           echo "$latest_tag" > ${{env.TAG_FILE}}
+          echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "new_tag = $latest_tag"
+          echo "env.new_tag = ${{env.tag_file}}"
+          echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
+          echo -e "\n\n\n\n\n\n\n\n\n"
 
       - name: Check if Latest Tag is a Release
         id: is_release
@@ -48,10 +53,9 @@ jobs:
           fi
           echo "$is_release" > ${{env.IS_RELEASE}}
           echo -e "\n\n\n\n\n\n\n\n\n"
-          echo "github_env = $GITHUB_ENV"
-          echo "cat github_env = $(cat $GITHUB_ENV)"
           echo "Is_release = $is_release"
           echo "env.Is_release = ${{env.is_release}}"
+          echo "cat env.Is_release = $(cat ${{env.is_release}})"
           echo -e "\n\n\n\n\n\n\n\n\n"
 
       - name: Increment Tag Version
@@ -72,30 +76,33 @@ jobs:
             echo "Latest tag is not a release. Skipping tag increment."
           fi
           echo -e "\n\n\n\n\n\n\n\n\n"
-          echo "github_env = $GITHUB_ENV"
-          echo "cat github_env = $(cat $GITHUB_ENV)"
           echo "new_tag = $new_tag"
-          echo "env.new_tag = ${{env.tag_file}}"
+          echo "env.new_tag = ${{env.TAG_FILE}}"
+          echo "env.is_release = $(cat ${{env.IS_RELEASE}})"
+          echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
+          echo "cat env.is_release = $(cat ${{env.IS_RELEASE}})"
           echo -e "\n\n\n\n\n\n\n\n\n"
       - name: Update module version
         run: |
+          latest_tag="$(cat ${{env.TAG_FILE}})"
           if [ -f ${{env.SETUP_FILE}} ]
           then
             echo "Updating version in ${{env.SETUP_FILE}}"
             echo -e "\n\n\n\n\n\n\n\n\n"
-            echo "Tag: $new_tag"
-            echo -e "\n\n\n\n\n\n\n\n\n"
-            sed -i "s/version='.*'/version='$new_tag'/g" ${{env.SETUP_FILE}}
+            echo "Tag: $latest_tag"
+            latest_tag=${latest_tag/"v"/""}
+            echo "Tag: $latest_tag"
+            sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
           fi
-          echo -e "\n\n\n\n\n\n\n\n\n"
           echo "Content: $(ls)"
           echo "Content of file: $(cat ${{env.SETUP_FILE}})"
           echo -e "\n\n\n\n\n\n\n\n\n"
       - name: Save module version
         run: |
+          new_tag="$(cat ${{env.TAG_FILE}})"
           echo "$new_tag" > ${{env.TAG_FILE}}
-          echo "New Tag: $new_tag"
           echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "New Tag: $new_tag"
           echo "Content: $(ls)"
           echo -e "\n\n\n\n\n\n\n\n\n"
 
