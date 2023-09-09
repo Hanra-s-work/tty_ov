@@ -15,11 +15,16 @@ env:
   SETUP_FILE: setup.py
   TAG_FILE: version.txt
   IS_RELEASE: is_release.txt
+  MATRIX_VERSION_PUBLISHING: "3.10"
 
 jobs:
 
   increment-the-tag:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout code
@@ -97,119 +102,106 @@ jobs:
           echo "Content: $(ls)"
           echo "Content of file: $(cat ${{env.SETUP_FILE}})"
           echo -e "\n\n\n\n\n\n\n\n\n"
-      - name: Save module version
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: restore cache
+        uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: |
+            ${{env.TAG_FILE}}
+            ${{env.SETUP_FILE}}
+          key: ${{env.CACHE_KEY}}
+          restore-keys: |
+            ${{env.CACHE_KEY}}
+        
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Get non published python packages
         run: |
-          new_tag="$(cat ${{env.TAG_FILE}})"
-          echo "$new_tag" > ${{env.TAG_FILE}}
-          echo -e "\n\n\n\n\n\n\n\n\n"
-          echo "New Tag: $new_tag"
+          git clone "https://github.com/Hanra-s-work/ask_question.git" aq
+          git clone "https://github.com/Hanra-s-work/colourise_output.git" co
           echo "Content: $(ls)"
           echo -e "\n\n\n\n\n\n\n\n\n"
-
-  build:
-    needs: increment-the-tag
-    if: success()
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"] # ["3.10"]
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
       
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Get non published python packages
-      run: |
-        git clone "https://github.com/Hanra-s-work/ask_question.git" aq
-        git clone "https://github.com/Hanra-s-work/colourise_output.git" co
-        echo "Content: $(ls)"
-        echo -e "\n\n\n\n\n\n\n\n\n"
-    
-    - name: Building dependencies
-      run: |
-        FOLDERS="aq co"
-        echo -e "\n\n\n\n\n\n\n"
-        echo "FOLDERS = $FOLDERS"
-        echo -e "\n\n\n\n\n\n\n"
-        echo "Installing build"
-        pip install build
-        echo "looping through"
-        for elem in $FOLDERS
-        do
+      - name: Building dependencies
+        run: |
+          FOLDERS="aq co"
           echo -e "\n\n\n\n\n\n\n"
-          echo "Entering $elem"
-          cd "$elem"
-          echo "Checking if requirements in $elem"
-          if [ -f requirements.txt ]
-          then
-            echo "Installing requirements $elem"
-            pip install -r requirements.txt
-          fi
-          echo "Building $elem"
-          python -m build
-          echo "Entering dist"
-          cd dist
+          echo "FOLDERS = $FOLDERS"
+          echo -e "\n\n\n\n\n\n\n"
+          echo "Installing build"
+          pip install build
+          echo "looping through"
+          for elem in $FOLDERS
+          do
+            echo -e "\n\n\n\n\n\n\n"
+            echo "Entering $elem"
+            cd "$elem"
+            echo "Checking if requirements in $elem"
+            if [ -f requirements.txt ]
+            then
+              echo "Installing requirements $elem"
+              pip install -r requirements.txt
+            fi
+            echo "Building $elem"
+            python -m build
+            echo "Entering dist"
+            cd dist
+            echo "Content: $(ls)"
+            echo "Locating a package"
+            PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
+            echo -e "\n\n\n\n\n\n\n"
+            echo "Package found: $PIP_PACKAGE"
+            echo -e "\n\n\n\n\n\n\n"
+            pip install "$PIP_PACKAGE"
+            cd ../..
+          done
+          echo -e "\n\n\n\n\n\n\n"
+          pip list
+          echo -e "\n\n\n\n\n\n\n"
           echo "Content: $(ls)"
-          echo "Locating a package"
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 pytest
+          lib_packages=$(find ./*/ -name "requirements.txt" -type f)
+          first_requirement=$(echo $lib_packages | cut -d " " -f 1)
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
+
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          
+      - name: building the package
+        run: |
+          pip install build
+          python -m build
+      
+      - name: Remove repositories
+        run: |
+          rm -rvf aq co
+      
+      - name: Installing the package
+        run: |
           PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
           echo -e "\n\n\n\n\n\n\n"
           echo "Package found: $PIP_PACKAGE"
           echo -e "\n\n\n\n\n\n\n"
           pip install "$PIP_PACKAGE"
-          cd ../..
-        done
-        echo -e "\n\n\n\n\n\n\n"
-        pip list
-        echo -e "\n\n\n\n\n\n\n"
-        echo "Content: $(ls)"
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        lib_packages=$(find ./*/ -name "requirements.txt" -type f)
-        first_requirement=$(echo $lib_packages | cut -d " " -f 1)
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
 
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        
-    - name: building the package
-      run: |
-        pip install build
-        python -m build
-    
-    - name: Remove repositories
-      run: |
-        rm -rvf aq co
-    
-    - name: Installing the package
-      run: |
-        PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
-        echo -e "\n\n\n\n\n\n\n"
-        echo "Package found: $PIP_PACKAGE"
-        echo -e "\n\n\n\n\n\n\n"
-        pip install "$PIP_PACKAGE"
-
-    - name: Test with pytest
-      run: |
-        pytest
-
-  publish-tag:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+      - name: Test with pytest
+        run: |
+          pytest
       - name: Checkout code
         uses: actions/checkout@v3
       # Add the following steps if you want to publish to GitHub Releases
@@ -217,8 +209,12 @@ jobs:
         run: |
           new_tag=$(cat ${{env.TAG_FILE}})
           echo "New Tag: $new_tag"
+      - name: Displaying current python version
+        run: |
+          echo "Python version: $(python --version)"
+          echo "Matrix version: ${{matrix.python-version}}"
       - name: Build and publish as GitHub release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*  # Replace with the path to your release artifacts
