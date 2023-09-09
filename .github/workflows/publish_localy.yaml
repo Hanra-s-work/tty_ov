@@ -201,7 +201,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
         run: |
           echo "Publishing ${{env.TAG_FILE}} as a GitHub release"
-          tag_version=$(cat ${{env.TAG_FILE}})
+          tag_version="$(cat ${{env.TAG_FILE}})"
           echo "Tag version: $tag_version"
           tag_description="Bump version to $tag_version"
           git tag add -a $tag_version -m $tag_description
