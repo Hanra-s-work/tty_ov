@@ -229,7 +229,7 @@ jobs:
           git config --local user.name "${{secrets.USER_NAME_E}}"
           git config --local user.email "${{secrets.USER_EMAIL_E}}"
       - name: Publish as GitHub release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
+        if: matrix.python-version == env.MATRIX_VERSION_PUBLISHING
         run: |
           tag_version="$(cat ${{env.TAG_FILE}})"
           echo "Publishing $tag_version as a GitHub release"
