@@ -219,10 +219,10 @@ jobs:
           echo "Installed version: $(python -m tty_ov)"
           pip list
       - name: Build and publish as GitHub release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*  # Replace with the path to your release artifacts
-          tag_name: $(cat ${{env.TAG_FILE}})
+          tag_name: "$(cat ${{env.TAG_FILE}})"
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
