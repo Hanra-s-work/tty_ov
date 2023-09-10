@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10"] # ["3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout code
@@ -57,9 +57,10 @@ jobs:
       - name: Check if Latest Tag is a Release
         id: is_release
         run: |
-          is_release=false
+          latest_tag="$(cat ${{env.TAG_FILE}})"
+          is_release="false"
           if [[ $latest_tag == "v"* ]]; then
-            is_release=true
+            is_release="true"
           fi
           echo "$is_release" > ${{env.IS_RELEASE}}
           echo -e "\n\n\n\n\n\n\n\n\n"
@@ -73,12 +74,28 @@ jobs:
         run: |
           is_release="$(cat ${{env.IS_RELEASE}})"
           latest_tag="$(cat ${{env.TAG_FILE}})"
+          echo "ls = $(ls)"
+          echo "is_release = $is_release"
+          echo "latest_tag = $latest_tag"
           if [[ $is_release == "true" ]]; then
             # Parse the latest tag and increment the version component you want
             # Example: Convert "v1.2.3" to "v1.2.4"
             new_tag="${latest_tag/v/}"  # Remove the leading "v"
+            echo "new_tag = $new_tag"
             IFS='.' read -ra version <<< "$new_tag"
-            ((version[2]++))  # Increment the third version component
+            echo "declare -p version = $(declare -p $version)"
+            echo "declare -p version[0] = $(declare -p ${version[0]})"
+            echo "declare -p version[1] = $(declare -p ${version[1]})"
+            echo "declare -p version[2] = $(declare -p ${version[2]})"
+            echo "version[2]+1 = $(expr "${version[2]}" + 1)"
+            echo "version[*] = ${version[*]}"
+            echo "version = ${version}"
+            echo "#version = ${#version}"
+            echo "version[0] = ${version[0]}"
+            echo "version[1] = ${version[1]}"
+            echo "version[2] = ${version[2]}"
+            version[2]=$(expr "${version[2]}" + 1)  # Increment the third version component
+            echo "Version = ${version[*]}"
             new_tag="v${version[0]}.${version[1]}.${version[2]}"
             echo "New Tag: $new_tag"
             echo "$new_tag" > ${{env.TAG_FILE}}
@@ -197,6 +214,10 @@ jobs:
         run: |
           echo "Python version: $(python --version)"
           echo "Matrix version: ${{matrix.python-version}}"
+      - name: Displaying installed version
+        run: |
+          echo "Installed version: $(python -m tty_ov)"
+          pip list
       - name: Publish as GitHub release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
         run: |
