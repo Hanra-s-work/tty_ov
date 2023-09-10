@@ -223,6 +223,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*  # Replace with the path to your release artifacts
-          tag_name: $new_tag
+          tag_name: $(cat ${{env.TAG_FILE}})
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
