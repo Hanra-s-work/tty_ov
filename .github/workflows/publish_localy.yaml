@@ -40,7 +40,7 @@ jobs:
         run: |
           git fetch --tags # Make sure to fetch the tags first
           latest_tag=$(git describe --tags --match "v*" $(git rev-list --tags --max-count=1))
-          if [ -z "$latest_tag" ]; then
+          if [ "$latest_tag" == "" ]; then
             echo "No tags found matching 'v*'."
             latest_tag=v1.0.0
             echo "Using a default tag: $latest_tag"
