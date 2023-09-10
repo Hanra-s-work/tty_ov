@@ -218,11 +218,23 @@ jobs:
         run: |
           echo "Installed version: $(python -m tty_ov)"
           pip list
-      - name: Build and publish as GitHub release
+      - name: Displaying the content of dist
+        run: |
+          echo -e "Content: \n$(ls ./dist)"
+
+      - name: Update author
+        run: |
+          git config --local user.name "${{secrets.USER_NAME_E}}"
+          git config --local user.email "${{secrets.USER_EMAIL_E}}"
+      - name: Publish as GitHub release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.python-version == env.MATRIX_VERSION_PUBLISHING
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dist/*  # Replace with the path to your release artifacts
-          tag_name: "$(cat ${{env.TAG_FILE}})"
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_ORG }}
+        run: |
+          tag_version="$(cat ${{env.TAG_FILE}})"
+          echo "Publishing $tag_version as a GitHub release"
+          echo "Tag version: $tag_version"
+          tag_description="Bump version to $tag_version"
+          echo "Tag description: $tag_description"
+          echo "Creating tag"
+          git tag -a "$tag_version" -m "$tag_description"
+          echo "Publishing tag"
+          git push origin $tag_version
