@@ -1487,6 +1487,7 @@ Output:
         self.old_pwd = os.getcwd()
         self.get_the_home_path()
         self.assing_colours()
+        self.colour_lib.init_pallet()
         self.options = [
             {"help": self.help, "desc": "Display this help section"},
             {"setenv": self.setenv, "desc": "Set a variable in the environement"},
@@ -1627,7 +1628,6 @@ if __name__ == "__main__":
     ERROR = ERR
     SUCCESS = 0
     COLOUR_LIB = ColouriseOutput()
-    COLOUR_LIB.init_pallet()
     ASK_QUESTION = AskQuestion()
     CONSTANTS = {
         "default": "0A",
