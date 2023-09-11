@@ -1514,8 +1514,10 @@ Output:
             {"cd": self.change_directory,
                 "desc": "Change the current working directory"},
             {"pwd": self.pwd, "desc": "Display the path to the directory in wich we are located"},
-            {"version": self.version,
-                "desc": "Display the current version of the program"},
+            {
+                "version": self.version,
+                "desc": "Display the current version of the program"
+            },
             {"author": self.author, "desc": "Display the author of the program"},
             {
                 "session_name": self.process_session_name,
@@ -1528,13 +1530,19 @@ Output:
             },
             {"ls": self.bind_ls, "desc": "List all files in the current folder"},
             {"dir": self.bind_ls, "desc": "List all files in the current folder"},
-            {"mkdir": self.make_directory,
-                "desc": "Create a directory in the present path"},
+            {
+                "mkdir": self.make_directory,
+                "desc": "Create a directory in the present path"
+            },
             {"touch": self.touch, "desc": "Create a file in the present path"},
-            {"rm": self.remove_file,
-                "desc": "Remove a file or directory if present in the path"},
-            {"rmdir": self.remove_directory,
-                "desc": "Remove a directory if present in the path"},
+            {
+                "rm": self.remove_file,
+                "desc": "Remove a file or directory if present in the path"
+            },
+            {
+                "rmdir": self.remove_directory,
+                "desc": "Remove a directory if present in the path"
+            },
         ]
 
     def unload_basics(self) -> int:
