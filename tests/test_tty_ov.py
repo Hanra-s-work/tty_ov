@@ -74,3 +74,37 @@ def test_get_version() -> None:
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
+
+def test_get_help() -> None:
+    """ Get the version of the library """
+    TTYI = TTY(
+        ERR,
+        ERROR,
+        SUCCESS,
+        COLOUR_LIB,
+        ASK_QUESTION,
+        CONSTANTS,
+        COLOURISE_OUTPUT
+    )
+    TTYI.load_basics()
+    response = TTYI.help([])
+    print_debug(f"response = {response}")
+    TTYI.unload_basics()
+    assert response == TTYI.success
+
+def test_get_help_hello_world() -> None:
+    """ Get the version of the library """
+    TTYI = TTY(
+        ERR,
+        ERROR,
+        SUCCESS,
+        COLOUR_LIB,
+        ASK_QUESTION,
+        CONSTANTS,
+        COLOURISE_OUTPUT
+    )
+    TTYI.load_basics()
+    response = TTYI.help(["hello_world"])
+    print_debug(f"response = {response}")
+    TTYI.unload_basics()
+    assert response == TTYI.success

@@ -745,7 +745,7 @@ Here are the different status colours:
     def process_help_call(self, args: list) -> int:
         """ Process the inputs for the help calls """
         usr_input = args[0].lower()
-        if usr_input == "help":
+        if usr_input == "help" or usr_input == "man":
             self.help_help()
             self.current_tty_status = self.success
             return self.success
@@ -1490,6 +1490,7 @@ Output:
         self.colour_lib.init_pallet()
         self.options = [
             {"help": self.help, "desc": "Display this help section"},
+            {"man": self.help, "desc": "Display this help section"},
             {"setenv": self.setenv, "desc": "Set a variable in the environement"},
             {
                 "unsetenv": self.unsetenv,
