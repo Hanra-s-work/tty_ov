@@ -288,3 +288,21 @@ def test_pwd() -> None:
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
+
+def test_status_code() -> None:
+    """ Test the removal of a file """
+    TTYI = TTY(
+        ERR,
+        ERROR,
+        SUCCESS,
+        COLOUR_LIB,
+        ASK_QUESTION,
+        CONSTANTS,
+        COLOURISE_OUTPUT
+    )
+    
+    TTYI.load_basics()
+    response = TTYI.display_status_code([])
+    print_debug(f"response = {response}")
+    TTYI.unload_basics()
+    assert response == TTYI.success

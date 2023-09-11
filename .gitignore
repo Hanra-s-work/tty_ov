@@ -3,3 +3,4 @@
 **/build
 **/.pytest_cache
 **/*.egg-info
+test_file_test_tty_ov
