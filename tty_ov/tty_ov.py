@@ -1610,7 +1610,7 @@ Output:
 
     def goodbye_message(self) -> None:
         """ Display a goodbye message on the exit of the main terminal """
-        goodbye_message = "Goodbye, see you next time !"
+        goodbye_message = "Goodbye, see you next time !\n"
         if self.current_tty_status == self.success:
             self.print_on_tty(self.success_colour, goodbye_message)
         elif self.current_tty_status in (self.err, self.error):
