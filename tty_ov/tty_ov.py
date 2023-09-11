@@ -1139,7 +1139,7 @@ Output:
         except IOError as err:
             self.print_on_tty(
                 self.error_colour,
-                f"File or directory '{path}' does not exist\n{err}"
+                f"File or directory '{path}' does not exist\n{err}\n"
             )
             self.current_tty_status = self.err
             return self.error

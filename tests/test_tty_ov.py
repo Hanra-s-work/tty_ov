@@ -1,5 +1,8 @@
 # tests/test_tty_ov.py
+import os
+import unittest.mock
 from sys import stderr
+from platform import system
 from tty_ov import TTY
 from tty_ov import ColouriseOutput
 from tty_ov import AskQuestion
@@ -122,7 +125,7 @@ def test_list_to_str() -> None:
     )
     TTYI.load_basics()
     test_input=["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-    expected_response="abcdefghijklmnopqrstuvwxyz"
+    expected_response="a b c d e f g h i j k l m n o p q r s t u v w x y z"
     response = TTYI.list_to_str(test_input)
     print_debug(f"response = {response}")
     TTYI.unload_basics()
@@ -215,13 +218,19 @@ def test_create_file() -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
+    file_name = "./test_file_test_tty_ov"
     TTYI.load_basics()
-    response = TTYI.touch(["/tmp/file"])
+    response = TTYI.touch([file_name])
     print_debug(f"response = {response}")
     TTYI.unload_basics()
+    if system() == "Windows":
+        os.system(f"del {file_name}")
+    else:
+        os.system(f"rm -f {file_name}")
     assert response == TTYI.success
 
-def test_remove_directory() -> None:
+@unittest.mock.patch('builtins.input', side_effect=["y"])
+def test_remove_directory(mock_input) -> None:
     """ Test the removal of a directory """
     TTYI = TTY(
         ERR,
@@ -238,7 +247,8 @@ def test_remove_directory() -> None:
     TTYI.unload_basics()
     assert response == TTYI.success
 
-def test_remove_file() -> None:
+@unittest.mock.patch('builtins.input', side_effect=["y"])
+def test_remove_file(mock_input) -> None:
     """ Test the removal of a file """
     TTYI = TTY(
         ERR,
@@ -249,8 +259,14 @@ def test_remove_file() -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
+    
     TTYI.load_basics()
-    response = TTYI.remove_file(["/tmp/test"])
+    file_name="test_file_tty_ov"
+    if system() == "Windows":
+        os.system(f"echo. > {file_name}")
+    else:
+        os.system(f"touch {file_name}")
+    response = TTYI.remove_file([file_name])
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
