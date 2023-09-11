@@ -60,7 +60,8 @@ jobs:
         run: |
           latest_tag="$(cat ${{env.TAG_FILE}})"
           is_release="false"
-          latest_updated_tag=$(git tag --list "v*" | sort -rV | head -n 1)
+          tag_list="$(git ls-remote --tags origin "v*" | awk '{print $2}' | sed 's/refs\/tags\///;s/\^{}//')"
+          latest_updated_tag=$(echo $tag_list |tr ' ' '\n' | sort -rV | head -n 1)
           if [[ $latest_updated_tag == $latest_tag ]]; then
             is_release="true"
           fi
