@@ -17,7 +17,6 @@ env:
 
 jobs:
   build:
-  increment-the-tag:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -36,8 +35,9 @@ jobs:
       - name: Get Latest Tag
         id: get_latest_tag
         run: |
+          tag_list="$(git ls-remote --tags origin "v*" | awk '{print $2}' | sed 's/refs\/tags\///;s/\^{}//')"
           echo "Updated the list"
-          latest_tag=$(git tag --list "v*" | sort -rV | head -n 1)
+          latest_tag=$(echo "$tag_list" | sort -rV | head -n 1)
           echo "Latest tag = $latest_tag"
           if [ "$latest_tag" == "" ]; then
             echo "No tags found matching 'v*'."
