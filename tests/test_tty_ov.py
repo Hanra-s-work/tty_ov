@@ -78,6 +78,7 @@ def test_get_version() -> None:
     TTYI.unload_basics()
     assert response == TTYI.success
 
+
 def test_get_help() -> None:
     """ Get the help section """
     TTYI = TTY(
@@ -94,6 +95,7 @@ def test_get_help() -> None:
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
+
 
 def test_get_help_hello_world() -> None:
     """ Get help about the hello_world function """
@@ -112,6 +114,7 @@ def test_get_help_hello_world() -> None:
     TTYI.unload_basics()
     assert response == TTYI.success
 
+
 def test_list_to_str() -> None:
     """ Convert a list to a string """
     TTYI = TTY(
@@ -124,12 +127,14 @@ def test_list_to_str() -> None:
         COLOURISE_OUTPUT
     )
     TTYI.load_basics()
-    test_input=["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-    expected_response="a b c d e f g h i j k l m n o p q r s t u v w x y z"
+    test_input = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+                  "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+    expected_response = "a b c d e f g h i j k l m n o p q r s t u v w x y z"
     response = TTYI.list_to_str(test_input)
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == expected_response
+
 
 def test_get_history() -> None:
     """ Get the history of the library """
@@ -150,6 +155,7 @@ def test_get_history() -> None:
     TTYI.unload_basics()
     assert response == TTYI.success
 
+
 def test_ls() -> None:
     """ Test the ls function """
     TTYI = TTY(
@@ -166,6 +172,7 @@ def test_ls() -> None:
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
+
 
 def test_change_directory() -> None:
     """ Test the change of a directory """
@@ -185,6 +192,7 @@ def test_change_directory() -> None:
     TTYI.unload_basics()
     assert response1 == TTYI.success
     assert response2 == TTYI.success
+
 
 def test_make_directory() -> None:
     """ Test the creation of a directory """
@@ -206,6 +214,7 @@ def test_make_directory() -> None:
     assert response1 == TTYI.success
     assert response2 == TTYI.success
     assert response3 == TTYI.success
+
 
 def test_create_file() -> None:
     """ Test the creation of a file """
@@ -229,6 +238,7 @@ def test_create_file() -> None:
         os.system(f"rm -f {file_name}")
     assert response == TTYI.success
 
+
 @unittest.mock.patch('builtins.input', side_effect=["y"])
 def test_remove_directory(mock_input) -> None:
     """ Test the removal of a directory """
@@ -247,6 +257,7 @@ def test_remove_directory(mock_input) -> None:
     TTYI.unload_basics()
     assert response == TTYI.success
 
+
 @unittest.mock.patch('builtins.input', side_effect=["y"])
 def test_remove_file(mock_input) -> None:
     """ Test the removal of a file """
@@ -259,9 +270,9 @@ def test_remove_file(mock_input) -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
-    
+
     TTYI.load_basics()
-    file_name="test_file_tty_ov"
+    file_name = "test_file_tty_ov"
     if system() == "Windows":
         os.system(f"echo. > {file_name}")
     else:
@@ -270,6 +281,7 @@ def test_remove_file(mock_input) -> None:
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
+
 
 def test_pwd() -> None:
     """ Test the removal of a file """
@@ -282,12 +294,13 @@ def test_pwd() -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
-    
+
     TTYI.load_basics()
     response = TTYI.pwd([])
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success
+
 
 def test_status_code() -> None:
     """ Test the removal of a file """
@@ -300,9 +313,28 @@ def test_status_code() -> None:
         CONSTANTS,
         COLOURISE_OUTPUT
     )
-    
+
     TTYI.load_basics()
     response = TTYI.display_status_code([])
+    print_debug(f"response = {response}")
+    TTYI.unload_basics()
+    assert response == TTYI.success
+
+
+def test_run_command() -> None:
+    """ Test the run function """
+    TTYI = TTY(
+        ERR,
+        ERROR,
+        SUCCESS,
+        COLOUR_LIB,
+        ASK_QUESTION,
+        CONSTANTS,
+        COLOURISE_OUTPUT
+    )
+
+    TTYI.load_basics()
+    response = TTYI.run_command(["echo", "'Hello", "World'"])
     print_debug(f"response = {response}")
     TTYI.unload_basics()
     assert response == TTYI.success

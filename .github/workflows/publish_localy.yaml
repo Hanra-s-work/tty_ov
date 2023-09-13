@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout code
@@ -191,6 +191,16 @@ jobs:
           
       - name: building the package
         run: |
+          latest_tag="$(cat ${{env.TAG_FILE}})"
+          if [ -f ${{env.SETUP_FILE}} ]
+          then
+            echo "Updating version in ${{env.SETUP_FILE}}"
+            echo -e "\n\n\n\n\n\n\n\n\n"
+            echo "Tag: $latest_tag"
+            latest_tag=${latest_tag/"v"/""}
+            echo "Tag: $latest_tag"
+            sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
+          fi
           pip install build
           python -m build
       
@@ -229,70 +239,6 @@ jobs:
         run: |
           git config --local user.name "${{secrets.USER_NAME_E}}"
           git config --local user.email "${{secrets.USER_EMAIL_E}}"
-      # - name: Remove if tag exists and is recent
-      #   run: |
-      #     function remove_tag() {
-      #       echo "Removing tag"
-      #       git tag -d "$tag_version"
-      #       echo "Removing tag from remote"
-      #       git push origin --delete "$tag_version"
-      #     }
-      #     tag_version="$(cat ${{env.TAG_FILE}})"
-      #     echo "Tag version: $tag_version"
-      #     tag_info=$(git show --format=%ai --no-path $tag_name)
-      #     tag_date=$(echo "$tag_version" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
-      #     echo "Tag date: $tag_date"
-      #     converted_tag_date=$(date -d "$tag_date" +%s)
-      #     current_date=$(date +'%Y-%m-%d %H:%M:%S)
-      #     echo "Current_date = '$current_date'"
-      #     current_date=$(date +%s)
-      #     time_difference=$((current_timestamp - tag_timestamp))
-      #     hours=$((time_difference / 3600))
-      #     minutes=$(( (time_difference % 3600) / 60 ))
-      #     seconds=$((time_difference % 60))
-      #     echo "Time difference: $hours:$minutes:$seconds"
-      #     max_age=$(echo ${{env.MAX_TAG_AGE}} | cut -d " " -f 1)
-      #     max_time=$(echo ${{env.MAX_TAG_AGE}} | cut -d " " -f 1)
-      #     max_time=${max_time,,}
-      #     if [ "$max_time" == "second" ]
-      #     then
-      #       if [ $seconds -le $max_age ]
-      #       then
-      #         remove_tag
-      #       fi
-      #     elif [ "$max_time" == "minute" ]
-      #     then
-      #       if [ $minutes -le "$max_age" ]
-      #       then
-      #         remove_tag
-      #       fi
-      #     elif ["$max_time" == "hour" ]
-      #     then
-      #       if [ $hours -le "$max_age" ]
-      #       then
-      #         remove_tag
-      #       fi
-      #     elif ["$max_time" == "day" ]
-      #     then
-      #       if [ $days -le "$max_age" ]
-      #       then
-      #         remove_tag
-      #       fi
-      #     elif ["$max_time" == "month" ]
-      #     then
-      #       if [ $months -le "$max_age" ]
-      #       then
-      #         remove_tag
-      #       fi
-      #     elif ["$max_time" == "year" ]
-      #     then
-      #       if [ $years -le "$max_age" ]
-      #       then
-      #         remove_tag
-      #       fi
-      #     else
-      #       echo "Invalid value for MAX_TAG_AGE"
-      #     fi
 
       - name: Publish as GitHub release
         if: matrix.python-version == env.MATRIX_VERSION_PUBLISHING

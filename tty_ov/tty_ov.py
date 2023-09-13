@@ -1405,6 +1405,7 @@ Output:
         return self.success
 
     def run_command(self, args: list) -> int:
+        """ Run a command in the host's shell environement """
         help_command = "run"
         if self.help_function_child_name == help_command:
             help_description = f"""
