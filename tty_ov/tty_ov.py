@@ -1043,7 +1043,7 @@ Output:
         return self.success
 
     def remove_a_directory(self, directory_path: str) -> int:
-        """ Remove a directory """
+        """ Remove a directory (child function)"""
         directory_path = directory_path.replace("\\", "/")
         if os.path.isdir(directory_path):
             shutil.rmtree(directory_path)
@@ -1404,6 +1404,47 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
+    def run_command(self, args: list) -> int:
+        help_command = "run"
+        if self.help_function_child_name == help_command:
+            help_description = f"""
+This is a command that allows you to run a command on the parent shell.
+Input:
+    {help_command} <your command>
+Output:
+    The result of the command you ran.
+Example:
+Input:
+    {help_command} echo "Hello World"
+Output:
+    Hello World
+"""
+            self.function_help(help_command, help_description)
+            self.current_tty_status = self.success
+            return self.success
+        if len(args) < 1:
+            self.print_on_tty(
+                self.error_colour,
+                "You need to specify a command to run\n"
+            )
+            self.current_tty_status = self.error
+            return self.error
+        command = " ".join(args)
+        self.print_on_tty(
+            self.default_colour,
+            f"Running command: {command}\n"
+        )
+        status = self.run_external_command(command)
+        if status != self.success:
+            self.print_on_tty(
+                self.error_colour,
+                "Error while running command\n"
+            )
+            self.current_tty_status = self.error
+            return self.error
+        self.current_tty_status = self.success
+        return self.success
+
     def process_input(self) -> None:
         """ The function in charge of processing the user input """
         if self.user_input == "":
@@ -1543,6 +1584,7 @@ Output:
                 "rmdir": self.remove_directory,
                 "desc": "Remove a directory if present in the path"
             },
+            {"run": self.run_command, "desc": "Run a command in the system terminal"}
         ]
 
     def unload_basics(self) -> int:
