@@ -685,6 +685,11 @@ Output (if the return code is unknown [here: 1]):
                 self.default_colour,
                 "This status is not referenced by this terminal.\n"
             )
+            if self.current_tty_status == 1:
+                self.print_on_tty(
+                    self.default_colour,
+                    "This status generally means that an error has occured during the execution of a program\n"
+                )
         self.current_tty_status = self.success
         return self.success
 
