@@ -1416,9 +1416,9 @@ Output:
     The result of the command you ran.
 Example:
 Input:
-    {help_command} echo "Hello World"
+    {help_command} echo "Hello World!"
 Output:
-    Hello World
+    Hello World!
 """
             self.function_help(help_command, help_description)
             self.current_tty_status = self.success
@@ -1441,8 +1441,8 @@ Output:
                 self.error_colour,
                 "Error while running command\n"
             )
-            self.current_tty_status = self.error
-            return self.error
+            self.current_tty_status = status
+            return status
         self.current_tty_status = self.success
         return self.success
 
