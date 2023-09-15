@@ -452,6 +452,15 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
+    def session_admin(self) -> None:
+        """ Display the level of the program """
+        self.print_on_tty(
+            self.default_colour,
+            "This program has admin privileges: "
+        )
+        self.print_on_tty(self.success_colour, f"{self.is_admin()}\n")
+        self.current_tty_status = self.success
+
     def env_plus_plus(self, args: list) -> int:
         """ Display the environement variables """
         func_name = "env++"
@@ -1451,6 +1460,139 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
+    def check_if_admin_for_windows(self) -> bool:
+        """ Check if the current windows user has admin rights """
+        command = """
+:: Check if the script is running with administrative privileges
+net session >nul 2>&1
+if %errorLevel% == 0 (
+    exit 2
+) else (
+    exit 3
+)
+"""
+        status = os.system(command)
+        if status == 2:
+            return True
+        return False
+
+    def is_admin(self) -> bool:
+        """ Check if the user has admin rights """
+        try:
+            # On Windows, check if the user has administrator privileges
+            if os.name == 'nt':
+                return self.check_if_admin_for_windows()
+            # On Unix-like systems, check if the user is the root user
+            else:
+                return os.geteuid() == 0
+        except AttributeError:
+            return False
+
+    def run_as_windows_admin(self, file: str) -> int:
+        """ Run a powershell script as an administrator """
+        return self.run_command(
+            [
+                "powershell.exe",
+                "-ExecutionPolicy Bypass",
+                "-Command \"",
+                "Start-Process",
+                "cmd",
+                "-Verb RunAs",
+                "-ArgumentList '",
+                f"/c {file}'\""
+            ]
+        )
+
+    def check_admin(self, args: list) -> int:
+        """ Check if the program has admin rights """
+        func_name = "check_admin"
+        if self.help_function_child_name == func_name:
+            help_description = f"""
+Check if the program has admin rights.
+Usage Example:
+Input:
+    {func_name}
+Output:
+    {self.is_admin()}
+"""
+            self.function_help(func_name, help_description)
+            self.current_tty_status = self.success
+            return self.success
+        self.print_on_tty(
+            self.default_colour,
+            f"{self.is_admin()}\n"
+        )
+        self.current_tty_status = self.success
+        return self.success
+
+    def save_to_file(self, data: str, filepath: str) -> int:
+        """ Save data to a file """
+        self.print_on_tty(
+            self.info_colour,
+            f"Saving {data} to file '{filepath}'\n"
+        )
+        try:
+            with open(filepath, "w", encoding="utf-8", newline="\n") as file:
+                file.write(data)
+                file.close()
+            self.print_on_tty(
+                self.success_colour,
+                f"{data} saved to file '{filepath}'\n"
+            )
+        except IOError as err:
+            self.print_on_tty(
+                self.error_colour,
+                f"File '{filepath}' could not be created\n{err}"
+            )
+            self.current_tty_status = self.error
+            return self.error
+        self.current_tty_status = self.success
+        return self.success
+
+    def run_as_admin(self, args: list) -> int:
+        """ Run a command as an administrator """
+        func_name = "run_as_admin"
+        if self.help_function_child_name == func_name:
+            help_description = f"""
+Run a command as an administrator.
+Usage Example:
+Input:
+    {func_name} <your command>
+Output:
+    The result of the command you ran.
+Example:
+Input:
+    {func_name} echo "Hello World!"
+Output:
+    Hello World!
+"""
+            self.function_help(func_name, help_description)
+            self.current_tty_status = self.success
+            return self.success
+        if len(args) < 1:
+            self.print_on_tty(
+                self.error_colour,
+                "You need to specify a command to run\n"
+            )
+            self.current_tty_status = self.error
+            return self.error
+        command = " ".join(args)
+        if os.name == "nt":
+            commands = f"{os.getcwd()}\\your_code.bat"
+            self.save_to_file(command, commands)
+            status = self.run_as_windows_admin(command)
+            self.remove_an_item(commands)
+            if status != self.success:
+                self.print_on_tty(
+                    self.error_colour,
+                    "Error while running command\n"
+                )
+                self.current_tty_status = status
+                return status
+            self.current_tty_status = self.success
+            return self.success
+        return self.run_command(["sudo", args])
+
     def process_input(self) -> None:
         """ The function in charge of processing the user input """
         if self.user_input == "":
@@ -1509,10 +1651,11 @@ Output:
             self.default_colour,
             "Welcome to the DevOps deployer\n"
         )
-        self.process_session_name([])
         self.version([])
-        self.author([])
+        self.session_admin()
+        self.process_session_name([])
         self.client([])
+        self.author([])
         self.print_on_tty(self.default_colour, "\n")
         self.current_tty_status = self.success
 
@@ -1590,7 +1733,15 @@ Output:
                 "rmdir": self.remove_directory,
                 "desc": "Remove a directory if present in the path"
             },
-            {"run": self.run_command, "desc": "Run a command in the system terminal"}
+            {"run": self.run_command, "desc": "Run a command in the system terminal"},
+            {
+                "is_admin": self.check_admin,
+                "desc": "Return True if the system has elevated privileges."
+            },
+            {
+                "super_run": self.run_as_admin,
+                "desc": "Run a command using elevated privileges"
+            }
         ]
 
     def unload_basics(self) -> int:
@@ -1617,7 +1768,7 @@ Output:
     def import_functions_into_shell(self, functions: list[dict[str, any]]) -> int:
         """ Import functions into the shell """
         for function in functions:
-            if function == None or isinstance(function, dict) != True:
+            if function is None or isinstance(function, dict) != True:
                 continue
             if "desc" not in function:
                 function["desc"] = "No description provided\n"
