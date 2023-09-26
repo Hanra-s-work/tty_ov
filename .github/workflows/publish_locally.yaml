@@ -15,6 +15,7 @@ env:
   IS_RELEASE: is_release.txt
   MATRIX_VERSION_PUBLISHING: "3.10"
   MAX_TAG_AGE: "1 hour"
+  SOURCE_CODE_PATH: tty_ov/tty_ov.py
 
 jobs:
 
@@ -112,7 +113,7 @@ jobs:
           echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
           echo "cat env.is_release = $(cat ${{env.IS_RELEASE}})"
           echo -e "\n\n\n\n\n\n\n\n\n"
-      - name: Update module version
+      - name: Update module version in source code and builder file
         run: |
           latest_tag="$(cat ${{env.TAG_FILE}})"
           if [ -f ${{env.SETUP_FILE}} ]
@@ -123,6 +124,7 @@ jobs:
             latest_tag=${latest_tag/"v"/""}
             echo "Tag: $latest_tag"
             sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
+          sed -i "s/self.__version__ = '.*'/self.__version__ = '$latest_tag'/g" ${{env.SOURCE_CODE_PATH}}
           fi
           echo "Content: $(ls)"
           echo "Content of file: $(cat ${{env.SETUP_FILE}})"

@@ -131,7 +131,7 @@ class HLLs:
             try:
                 stat_info = os.lstat(filename)
             except:
-                sys.stderr.write("%s: No such file or directory\n" % filename)
+                sys.stderr.write(f"{filename}: No such file or directory\n")
                 global_status = self.error
                 continue
 
@@ -140,26 +140,26 @@ class HLLs:
                 filename
             )
 
-            nlink = "%4d" % stat_info.st_nlink
+            nlink = f"{stat_info.st_nlink:4d}%4d"
             name = self.get_user_info(stat_info.st_uid)
             group = self.get_group_info(stat_info.st_gid)
-            size = "%8d" % stat_info.st_size
+            size = f"{stat_info.st_size:8d}"
 
-            ts = stat_info.st_mtime
-            if (ts < recent) or (ts > now):
+            time_stamp = stat_info.st_mtime
+            if (time_stamp < recent) or (time_stamp > now):
                 time_fmt = "%b %e  %Y"
             else:
                 time_fmt = "%b %e %R"
-            time_str = time.strftime(time_fmt, time.gmtime(ts))
+            time_str = time.strftime(time_fmt, time.gmtime(time_stamp))
 
             if self.colors[color] and does_have_colors:
-                filenameStr = self.colors[color] + filename + "\x1b[00m"
+                filename_str = self.colors[color] + filename + "\x1b[00m"
             else:
-                filenameStr = filename
+                filename_str = filename
 
             if link:
-                filenameStr += " -> "
-            filenameStr += link
+                filename_str += " -> "
+            filename_str += link
 
             table.add_row(
                 [
@@ -169,7 +169,7 @@ class HLLs:
                     group,
                     size,
                     time_str,
-                    filenameStr
+                    filename_str
                 ]
             )
 
@@ -223,6 +223,8 @@ class TTY:
     """ The class in charge of simulating a tty """
 
     def __init__(self, err: int, error: int, success: int, colour_lib: ColouriseOutput, ask_question: AskQuestion, colours: dict, colourise_output: bool = True) -> None:
+        # ---- The version of the program ----
+        self.__version__ = "1.0.0"
         # ---- TTY general info ----
         self.program_version = "1.0.0"
         self.client_name = "(c) OpenValue"
@@ -697,7 +699,7 @@ Output (if the return code is unknown [here: 1]):
             if self.current_tty_status == 1:
                 self.print_on_tty(
                     self.default_colour,
-                    "This status generally means that an error has occured during the execution of a program\n"
+                    "This status generally means that an error has occurred during the execution of a program\n"
                 )
         self.current_tty_status = self.success
         return self.success
