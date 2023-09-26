@@ -1,3 +1,7 @@
+"""
+File containing the required information to successfully build a python package
+"""
+
 import setuptools
 
 with open("README.md", "r", encoding="utf-8", newline="\n") as fh:
