@@ -226,7 +226,7 @@ class TTY:
         # ---- The version of the program ----
         self.__version__ = "1.0.0"
         # ---- TTY general info ----
-        self.program_version = "1.0.0"
+        self.program_version = self.__version__
         self.client_name = "(c) OpenValue"
         self.program_author = "(c) Henry Letellier"
         # ---- Command history ----
