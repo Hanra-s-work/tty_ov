@@ -44,12 +44,7 @@ class HLLs:
             return False
         if not stream.isatty():
             return False
-        try:
-            import curses
-            curses.setupterm()
-            return curses.tigetnum("colors") > 2
-        except:
-            return False
+        return False
 
     def get_mode_info(self, mode, filename):
         """ Get the type of document in order to apply some colour """
@@ -130,7 +125,7 @@ class HLLs:
         for filename in files:
             try:
                 stat_info = os.lstat(filename)
-            except:
+            except OSError:
                 sys.stderr.write(f"{filename}: No such file or directory\n")
                 global_status = self.error
                 continue
@@ -278,6 +273,12 @@ class TTY:
         self.ls = HLLs(self.success, self.error)
         # ---- Master session name ----
         self.master_session = "main"
+        # ---- Argument command tracking ----
+        self.command_seperator_token = "@#"
+        # ---- Comment Tracking ----
+        self.comment_token = "--"
+        # ---- Pipe input ----
+        self.pipe_input = None
 
     def print_on_tty(self, colour: str, string: str) -> None:
         """ The function in charge of displaying a string on the tty """
@@ -1601,7 +1602,8 @@ Output:
             self.current_tty_status = self.success
             return
         self.history.append(self.user_input)
-        command = self.user_input.split(self.input_split_char)
+        cleaned_command = self.user_input.split(self.comment_token)[0]
+        command = cleaned_command.split(self.input_split_char)
         args = command[1:]
         command = command[0].lower()
         was_found = False
@@ -1647,6 +1649,120 @@ Output:
         self.env_definition_colour = self.tty_colours["env_definition_colour"]
         self.session_name_colour = self.tty_colours["session_name_colour"]
 
+    def command_seperator(self, args: list) -> int:
+        """ Display/Change the token in charge of indicating the beginning of a new command when many are put together """
+        func_name = "command_seperator"
+        if self.help_function_child_name == func_name:
+            help_description = f"""
+Display the token in charge of indicating the beginning of a new command when many are put together.
+Usage Example:
+Input:
+    {func_name}
+Output:
+    {self.command_seperator_token}
+
+Input:
+    {func_name} -
+Output:
+    The command seperator has be changed from '{self.command_seperator_token}' to '-'.
+Input:
+    {func_name} - c
+Output:
+    The command seperator has be changed from '{self.command_seperator_token}' to '-c'.
+
+"""
+            self.function_help(func_name, help_description)
+            self.current_tty_status = self.success
+            return self.success
+        if len(args) == 0:
+            self.print_on_tty(
+                self.default_colour,
+                "The command seperator is: "
+            )
+            self.print_on_tty(
+                self.success_colour,
+                f"{self.command_seperator_token}\n"
+            )
+            self.current_tty_status = self.success
+            return self.success
+        prev_seperator = self.command_seperator_token
+        self.command_seperator_token = "".join(args)
+        if self.command_seperator_token == self.comment_token:
+            self.print_on_tty(
+                self.error_colour,
+                "Error: The seperator cannot be the same as the comment token"
+            )
+            self.command_seperator_token = prev_seperator
+            self.current_tty_status = self.error
+            return self.error
+        if len(self.command_seperator_token) == 0 or self.command_seperator_token.isspace() is True:
+            self.print_on_tty(
+                self.error_colour,
+                "Error: The seperator cannot be empty or contain only blanks/tabs"
+            )
+            self.command_seperator_token = prev_seperator
+            self.current_tty_status = self.error
+            return self.error
+        self.print_on_tty(
+            self.success_colour,
+            f"The command seperator has be changed from '{prev_seperator}' to '{self.command_seperator_token}'.\n"
+        )
+        self.current_tty_status = self.success
+        return self.success
+
+    def update_comment_token(self, args: list) -> int:
+        """ Display/Change the token in charge of indicating the beginning of a new comment """
+        func_name = "comment_token"
+        if self.help_function_child_name == func_name:
+            help_description = f"""
+Display the token in charge of indicating the beginning of a comment.
+Usage Example:
+Input:
+    {func_name}
+Output:
+    {self.comment_token}
+
+Input:
+    {func_name} -
+Output:
+    The comment token has be changed from '{self.comment_token}' to '-'.
+Input:
+    {func_name} - c
+Output:
+    The comment token has be changed from '{self.comment_token}' to '-c'.
+
+"""
+            self.function_help(func_name, help_description)
+            self.current_tty_status = self.success
+            return self.success
+        if len(args) == 0:
+            self.print_on_tty(
+                self.default_colour,
+                "The comment token is: "
+            )
+            self.print_on_tty(
+                self.success_colour,
+                f"{self.comment_token}\n"
+            )
+            self.current_tty_status = self.success
+            return self.success
+        prev_token = self.comment_token
+        self.comment_token = "".join(args)
+        if len(self.comment_token) == 0 or self.comment_token.isspace() is True:
+            self.print_on_tty(
+                self.error_colour,
+                "Error: The seperator cannot be empty or contain only blanks/tabs"
+            )
+            self.command_seperator_token = prev_token
+            self.current_tty_status = self.error
+            return self.error
+        self.print_on_tty(
+            self.success_colour,
+            f"The comment token has be changed from '{prev_token}' to '{self.comment_token}'.\n"
+        )
+        self.current_tty_status = self.success
+        return self.success
+
     def title(self) -> None:
         """ The boot tile """
         self.print_on_tty(
@@ -1655,6 +1771,8 @@ Output:
         )
         self.version([])
         self.session_admin()
+        self.command_seperator([])
+        self.update_comment_token([])
         self.process_session_name([])
         self.client([])
         self.author([])
@@ -1750,6 +1868,14 @@ Output:
             {
                 "super_run": self.run_as_admin,
                 "desc": "Run a command using elevated privileges"
+            },
+            {
+                "command_seperator": self.command_seperator,
+                "desc": "Display/Change the token in charge of indicating the begining of a new command when many are put together"
+            },
+            {
+                "comment_token": self.update_comment_token,
+                "desc": "Display/Change the token in charge of indicating the begining of a new command when many are put together"
             }
         ]
 
@@ -1826,14 +1952,59 @@ Output:
         else:
             self.print_on_tty(self.error_colour, goodbye_message)
 
+    def run_complex_input(self, complex_input: list[str]) -> None:
+        """ Run a complex input """
+        for item in complex_input:
+            self.user_input = item
+            self.process_input()
+
+    def process_complex_input(self, usr_input: list) -> None:
+        """ process multiple command input if provided """
+        command_list = []
+        buffer = ""
+        prev = ""
+        for item in usr_input:
+            if self.command_seperator_token == item:
+                command_list.append(buffer)
+                prev = item
+                buffer = ""
+                continue
+            if prev in (self.command_seperator_token, ""):
+                buffer += f"{item}"
+                prev = item
+                continue
+            if buffer != " ":
+                buffer += f" {item}"
+                prev = item
+        if buffer != "":
+            command_list.append(buffer)
+        self.run_complex_input(command_list)
+
+    def process_if_arg_input(self) -> None:
+        """ Check if the argv contains arguments input """
+        if len(sys.argv) > 1:
+            if self.command_seperator_token in sys.argv:
+                self.process_complex_input(sys.argv[1:])
+            else:
+                self.user_input = " ".join(sys.argv[1:])
+                self.process_input()
+
+    def process_if_pipe_input(self) -> None:
+        """ Check if the user input is a pipe input """
+        if not sys.stdin.isatty():
+            self.user_input = sys.stdin.read()
+            self.process_input()
+
     def mainloop(self, session_name="main") -> int:
         """ The mainloop allowing the terminal to run like any other terminals """
         self.session_name = session_name
+        self.process_if_arg_input()
         self.title()
         while self.continue_tty_loop:
             self.help_function_child_name = "help"
             self.display_prompt()
-            self.process_input()
+            seperated_commands = self.user_input.split(self.input_split_char)
+            self.process_complex_input(seperated_commands)
         if self.session_name == "main":
             self.goodbye_message()
         self.print_on_tty(self.reset_colour, "")

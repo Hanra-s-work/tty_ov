@@ -4,4 +4,9 @@
 **/build
 **/.pytest_cache
 **/*.egg-info
+**/wenv/**
+**/lenv/**
+**/menv/**
+**/uenv/**
+**/venv/**
 test_file_test_tty_ov
