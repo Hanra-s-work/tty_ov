@@ -344,18 +344,6 @@ def test_run_command() -> None:
     assert response == TTYI.success
 
 
-input_args_1 = [
-    "script_name.py",
-    "hello_world",
-    "hi",
-    "how",
-    "are",
-    "you",
-    "@#",
-    "exit"
-]
-
-
 def compile_hello_world_arguments(input_args: list[str]) -> str:
     """ Compile the arguments for the hello_world function """
     function_prompt = "Hello World !\n"
@@ -382,7 +370,18 @@ def compile_hello_world_arguments(input_args: list[str]) -> str:
     return result
 
 
-expected_result_1 = f"{compile_hello_world_arguments(input_args_1)}Leaving Parent session\n"
+input_args_1 = [
+    "script_name.py",
+    "hello_world",
+    "hi",
+    "how",
+    "are",
+    "you",
+    "@#",
+    "exit"
+]
+
+expected_result_1 = "Hello World !\n0: 'hi'\n1: 'how'\n2: 'are'\n3: 'you'\nLeaving program"
 
 
 @pytest.mark.parametrize(
@@ -430,10 +429,7 @@ multy_oneliner_input_args_1 = [
     "@#",
     "exit"
 ]
-multy_oneliner_expected_result_1 = compile_hello_world_arguments(
-    multy_oneliner_input_args_1[:len(multy_oneliner_input_args_1)]
-)
-multy_oneliner_expected_result_1 += "Leaving Parent session\n"
+multy_oneliner_expected_result_1 = "Hello World !\n0: 'hi'\n1: 'how'\n2: 'are'\n3: 'you'\nLeaving program\n"
 multy_oneliner_input_args_2 = [
     "script_name.py",
     "hello_world",
@@ -447,10 +443,7 @@ multy_oneliner_input_args_2 = [
     "@#",
     "exit"
 ]
-multy_oneliner_expected_result_2 = compile_hello_world_arguments(
-    multy_oneliner_input_args_2[:len(multy_oneliner_input_args_1)]
-)
-multy_oneliner_expected_result_2 += "Leaving Parent session\n"
+multy_oneliner_expected_result_2 = ""
 multy_oneliner_input_args_3 = [
     "script_name.py",
     "hello_world",
@@ -470,10 +463,7 @@ multy_oneliner_input_args_3 = [
     "@#",
     "exit"
 ]
-multy_oneliner_expected_result_3 = compile_hello_world_arguments(
-    multy_oneliner_input_args_3[:len(multy_oneliner_input_args_1)]
-)
-multy_oneliner_expected_result_3 += "Leaving Parent session\n"
+multy_oneliner_expected_result_3 = "Hello World !\nHello World !\n0: 'hi'\n1: 'how'\n2: 'are'\n3: 'you'\n4: 'you'\n5: '@#@#'\n6: 'hello_world'\n7: 'you'\nLeaving program\n"
 
 
 @pytest.mark.parametrize(

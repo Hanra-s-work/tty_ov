@@ -220,7 +220,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest
+          pytest -s
       - name: Get version
         run: |
           new_tag=$(cat ${{env.TAG_FILE}})

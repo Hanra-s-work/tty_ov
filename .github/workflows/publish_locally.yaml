@@ -3,10 +3,10 @@ name: tty-ov-gh-packages
 on:
   push:
     tags:
-      - 'v*'
+    - 'v*'
   pull_request:
     branches:
-      - main
+    - main
   workflow_dispatch:
 
 env:
@@ -27,231 +27,231 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Get Latest Tag
-        id: get_latest_tag
-        run: |
-          tag_list="$(git ls-remote --tags origin "v*" | awk '{print $2}' | sed 's/refs\/tags\///;s/\^{}//')"
-          echo "Updated the list"
-          latest_tag=$(echo "$tag_list" | sort -rV | head -n 1)
-          echo "Latest tag = $latest_tag"
-          if [ "$latest_tag" == "" ]; then
-            echo "No tags found matching 'v*'."
-            latest_tag="v1.0.0"
-            echo "Using a default tag: $latest_tag"
-          else
-            echo "Latest Tag: $latest_tag"
-          fi
-          echo "$latest_tag" > ${{env.TAG_FILE}}
-          echo -e "\n\n\n\n\n\n\n\n\n"
-          echo "new_tag = $latest_tag"
-          echo "env.new_tag = ${{env.tag_file}}"
-          echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
-          echo -e "\n\n\n\n\n\n\n\n\n"
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: Check if Latest Tag is a Release
-        id: is_release
-        run: |
-          latest_tag="$(cat ${{env.TAG_FILE}})"
-          is_release="false"
-          tag_list="$(git ls-remote --tags origin "v*" | awk '{print $2}' | sed 's/refs\/tags\///;s/\^{}//')"
-          latest_updated_tag=$(echo $tag_list |tr ' ' '\n' | sort -rV | head -n 1)
-          if [[ $latest_updated_tag == $latest_tag ]]; then
-            is_release="true"
-          fi
-          echo "$is_release" > ${{env.IS_RELEASE}}
-          echo -e "\n\n\n\n\n\n\n\n\n"
-          echo "Is_release = $is_release"
-          echo "env.Is_release = ${{env.is_release}}"
-          echo "cat env.Is_release = $(cat ${{env.is_release}})"
-          echo -e "\n\n\n\n\n\n\n\n\n"
+    - name: Get Latest Tag
+      id: get_latest_tag
+      run: |
+        tag_list="$(git ls-remote --tags origin "v*" | awk '{print $2}' | sed 's/refs\/tags\///;s/\^{}//')"
+        echo "Updated the list"
+        latest_tag=$(echo "$tag_list" | sort -rV | head -n 1)
+        echo "Latest tag = $latest_tag"
+        if [ "$latest_tag" == "" ]; then
+          echo "No tags found matching 'v*'."
+          latest_tag="v1.0.0"
+          echo "Using a default tag: $latest_tag"
+        else
+          echo "Latest Tag: $latest_tag"
+        fi
+        echo "$latest_tag" > ${{env.TAG_FILE}}
+        echo -e "\n\n\n\n\n\n\n\n\n"
+        echo "new_tag = $latest_tag"
+        echo "env.new_tag = ${{env.tag_file}}"
+        echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
+        echo -e "\n\n\n\n\n\n\n\n\n"
 
-      - name: Increment Tag Version
-        id: increment_tag
-        run: |
-          is_release="$(cat ${{env.IS_RELEASE}})"
-          latest_tag="$(cat ${{env.TAG_FILE}})"
-          echo "ls = $(ls)"
-          echo "is_release = $is_release"
-          echo "latest_tag = $latest_tag"
-          if [[ $is_release == "true" ]]; then
-            # Parse the latest tag and increment the version component you want
-            # Example: Convert "v1.2.3" to "v1.2.4"
-            new_tag="${latest_tag/v/}"  # Remove the leading "v"
-            echo "new_tag = $new_tag"
-            IFS='.' read -ra version <<< "$new_tag"
-            echo "declare -p version = $(declare -p $version)"
-            echo "declare -p version[0] = $(declare -p ${version[0]})"
-            echo "declare -p version[1] = $(declare -p ${version[1]})"
-            echo "declare -p version[2] = $(declare -p ${version[2]})"
-            echo "version[2]+1 = $(expr "${version[2]}" + 1)"
-            echo "version[*] = ${version[*]}"
-            echo "version = ${version}"
-            echo "#version = ${#version}"
-            echo "version[0] = ${version[0]}"
-            echo "version[1] = ${version[1]}"
-            echo "version[2] = ${version[2]}"
-            version[2]=$(expr "${version[2]}" + 1)  # Increment the third version component
-            echo "Version = ${version[*]}"
-            new_tag="v${version[0]}.${version[1]}.${version[2]}"
-            echo "New Tag: $new_tag"
-            echo "$new_tag" > ${{env.TAG_FILE}}
-          else
-            echo "Latest tag is not a release. Skipping tag increment."
-          fi
-          echo -e "\n\n\n\n\n\n\n\n\n"
+    - name: Check if Latest Tag is a Release
+      id: is_release
+      run: |
+        latest_tag="$(cat ${{env.TAG_FILE}})"
+        is_release="false"
+        tag_list="$(git ls-remote --tags origin "v*" | awk '{print $2}' | sed 's/refs\/tags\///;s/\^{}//')"
+        latest_updated_tag=$(echo $tag_list |tr ' ' '\n' | sort -rV | head -n 1)
+        if [[ $latest_updated_tag == $latest_tag ]]; then
+          is_release="true"
+        fi
+        echo "$is_release" > ${{env.IS_RELEASE}}
+        echo -e "\n\n\n\n\n\n\n\n\n"
+        echo "Is_release = $is_release"
+        echo "env.Is_release = ${{env.is_release}}"
+        echo "cat env.Is_release = $(cat ${{env.is_release}})"
+        echo -e "\n\n\n\n\n\n\n\n\n"
+
+    - name: Increment Tag Version
+      id: increment_tag
+      run: |
+        is_release="$(cat ${{env.IS_RELEASE}})"
+        latest_tag="$(cat ${{env.TAG_FILE}})"
+        echo "ls = $(ls)"
+        echo "is_release = $is_release"
+        echo "latest_tag = $latest_tag"
+        if [[ $is_release == "true" ]]; then
+          # Parse the latest tag and increment the version component you want
+          # Example: Convert "v1.2.3" to "v1.2.4"
+          new_tag="${latest_tag/v/}"  # Remove the leading "v"
           echo "new_tag = $new_tag"
-          echo "env.new_tag = ${{env.TAG_FILE}}"
-          echo "env.is_release = $(cat ${{env.IS_RELEASE}})"
-          echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
-          echo "cat env.is_release = $(cat ${{env.IS_RELEASE}})"
+          IFS='.' read -ra version <<< "$new_tag"
+          echo "declare -p version = $(declare -p $version)"
+          echo "declare -p version[0] = $(declare -p ${version[0]})"
+          echo "declare -p version[1] = $(declare -p ${version[1]})"
+          echo "declare -p version[2] = $(declare -p ${version[2]})"
+          echo "version[2]+1 = $(expr "${version[2]}" + 1)"
+          echo "version[*] = ${version[*]}"
+          echo "version = ${version}"
+          echo "#version = ${#version}"
+          echo "version[0] = ${version[0]}"
+          echo "version[1] = ${version[1]}"
+          echo "version[2] = ${version[2]}"
+          version[2]=$(expr "${version[2]}" + 1)  # Increment the third version component
+          echo "Version = ${version[*]}"
+          new_tag="v${version[0]}.${version[1]}.${version[2]}"
+          echo "New Tag: $new_tag"
+          echo "$new_tag" > ${{env.TAG_FILE}}
+        else
+          echo "Latest tag is not a release. Skipping tag increment."
+        fi
+        echo -e "\n\n\n\n\n\n\n\n\n"
+        echo "new_tag = $new_tag"
+        echo "env.new_tag = ${{env.TAG_FILE}}"
+        echo "env.is_release = $(cat ${{env.IS_RELEASE}})"
+        echo "cat env.new_tag = $(cat ${{env.TAG_FILE}})"
+        echo "cat env.is_release = $(cat ${{env.IS_RELEASE}})"
+        echo -e "\n\n\n\n\n\n\n\n\n"
+    - name: Update module version in source code and builder file
+      run: |
+        latest_tag="$(cat ${{env.TAG_FILE}})"
+        if [ -f ${{env.SETUP_FILE}} ]
+        then
+          echo "Updating version in ${{env.SETUP_FILE}}"
           echo -e "\n\n\n\n\n\n\n\n\n"
-      - name: Update module version in source code and builder file
-        run: |
-          latest_tag="$(cat ${{env.TAG_FILE}})"
-          if [ -f ${{env.SETUP_FILE}} ]
-          then
-            echo "Updating version in ${{env.SETUP_FILE}}"
-            echo -e "\n\n\n\n\n\n\n\n\n"
-            echo "Tag: $latest_tag"
-            latest_tag=${latest_tag/"v"/""}
-            echo "Tag: $latest_tag"
-            sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
-          sed -i "s/self.__version__ = '.*'/self.__version__ = '$latest_tag'/g" ${{env.SOURCE_CODE_PATH}}
-          fi
-          echo "Content: $(ls)"
-          echo "Content of file: $(cat ${{env.SETUP_FILE}})"
-          echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "Tag: $latest_tag"
+          latest_tag=${latest_tag/"v"/""}
+          echo "Tag: $latest_tag"
+          sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
+        sed -i "s/self.__version__ = '.*'/self.__version__ = '$latest_tag'/g" ${{env.SOURCE_CODE_PATH}}
+        fi
+        echo "Content: $(ls)"
+        echo "Content of file: $(cat ${{env.SETUP_FILE}})"
+        echo -e "\n\n\n\n\n\n\n\n\n"
 
-      - name: Get non published python packages
-        run: |
-          git clone "https://github.com/Hanra-s-work/ask_question.git" aq
-          git clone "https://github.com/Hanra-s-work/colourise_output.git" co
-          echo "Content: $(ls)"
-          echo -e "\n\n\n\n\n\n\n\n\n"
-      
-      - name: Building dependencies
-        run: |
-          FOLDERS="aq co"
-          echo -e "\n\n\n\n\n\n\n"
-          echo "FOLDERS = $FOLDERS"
-          echo -e "\n\n\n\n\n\n\n"
-          echo "Installing build"
-          pip install build
-          echo "looping through"
-          for elem in $FOLDERS
-          do
-            echo -e "\n\n\n\n\n\n\n"
-            echo "Entering $elem"
-            cd "$elem"
-            echo "Checking if requirements in $elem"
-            if [ -f requirements.txt ]
-            then
-              echo "Installing requirements $elem"
-              pip install -r requirements.txt
-            fi
-            echo "Building $elem"
-            python -m build
-            echo "Entering dist"
-            cd dist
-            echo "Content: $(ls)"
-            echo "Locating a package"
-            PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
-            echo -e "\n\n\n\n\n\n\n"
-            echo "Package found: $PIP_PACKAGE"
-            echo -e "\n\n\n\n\n\n\n"
-            pip install "$PIP_PACKAGE"
-            cd ../..
-          done
-          echo -e "\n\n\n\n\n\n\n"
-          pip list
-          echo -e "\n\n\n\n\n\n\n"
-          echo "Content: $(ls)"
-          
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install flake8 pytest
-          lib_packages=$(find ./*/ -name "requirements.txt" -type f)
-          first_requirement=$(echo $lib_packages | cut -d " " -f 1)
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
+    - name: Get non published python packages
+      run: |
+        git clone "https://github.com/Hanra-s-work/ask_question.git" aq
+        git clone "https://github.com/Hanra-s-work/colourise_output.git" co
+        echo "Content: $(ls)"
+        echo -e "\n\n\n\n\n\n\n\n\n"
 
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-          
-      - name: building the package
-        run: |
-          latest_tag="$(cat ${{env.TAG_FILE}})"
-          if [ -f ${{env.SETUP_FILE}} ]
+    - name: Building dependencies
+      run: |
+        FOLDERS="aq co"
+        echo -e "\n\n\n\n\n\n\n"
+        echo "FOLDERS = $FOLDERS"
+        echo -e "\n\n\n\n\n\n\n"
+        echo "Installing build"
+        pip install build
+        echo "looping through"
+        for elem in $FOLDERS
+        do
+          echo -e "\n\n\n\n\n\n\n"
+          echo "Entering $elem"
+          cd "$elem"
+          echo "Checking if requirements in $elem"
+          if [ -f requirements.txt ]
           then
-            echo "Updating version in ${{env.SETUP_FILE}}"
-            echo -e "\n\n\n\n\n\n\n\n\n"
-            echo "Tag: $latest_tag"
-            latest_tag=${latest_tag/"v"/""}
-            echo "Tag: $latest_tag"
-            sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
+            echo "Installing requirements $elem"
+            pip install -r requirements.txt
           fi
-          pip install build
+          echo "Building $elem"
           python -m build
-      
-      - name: Remove repositories
-        run: |
-          rm -rvf aq co
-      
-      - name: Installing the package
-        run: |
+          echo "Entering dist"
+          cd dist
+          echo "Content: $(ls)"
+          echo "Locating a package"
           PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
           echo -e "\n\n\n\n\n\n\n"
           echo "Package found: $PIP_PACKAGE"
           echo -e "\n\n\n\n\n\n\n"
           pip install "$PIP_PACKAGE"
+          cd ../..
+        done
+        echo -e "\n\n\n\n\n\n\n"
+        pip list
+        echo -e "\n\n\n\n\n\n\n"
+        echo "Content: $(ls)"
 
-      - name: Test with pytest
-        run: |
-          pytest
-      - name: Get version
-        run: |
-          new_tag=$(cat ${{env.TAG_FILE}})
-          echo "New Tag: $new_tag"
-      - name: Displaying current python version
-        run: |
-          echo "Python version: $(python --version)"
-          echo "Matrix version: ${{matrix.python-version}}"
-      - name: Displaying installed version
-        run: |
-          echo "Installed version: $(python -m tty_ov)"
-          pip list
-      - name: Displaying the content of dist
-        run: |
-          echo -e "Content: \n$(ls ./dist)"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install flake8 pytest
+        lib_packages=$(find ./*/ -name "requirements.txt" -type f)
+        first_requirement=$(echo $lib_packages | cut -d " " -f 1)
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ ${#first_requirements} -gt 0 ]; then pip install -r $first_requirements.txt; fi
 
-      - name: Update author
-        run: |
-          git config --local user.name "${{secrets.USER_NAME_E}}"
-          git config --local user.email "${{secrets.USER_EMAIL_E}}"
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Publish as GitHub release
-        if: matrix.python-version == env.MATRIX_VERSION_PUBLISHING
-        run: |
-          tag_version="$(cat ${{env.TAG_FILE}})"
-          comment=$(git log -1 --pretty=format:"%s")
-          echo "Publishing $tag_version as a GitHub release"
-          echo "Tag version: $tag_version"
-          tag_description="Bump version to $tag_version: '$comment'"
-          echo "Tag description: $tag_description"
-          echo "Creating tag"
-          git tag -a "$tag_version" -m "$tag_description"
-          echo "Publishing tag"
-          git push origin $tag_version
+    - name: building the package
+      run: |
+        latest_tag="$(cat ${{env.TAG_FILE}})"
+        if [ -f ${{env.SETUP_FILE}} ]
+        then
+          echo "Updating version in ${{env.SETUP_FILE}}"
+          echo -e "\n\n\n\n\n\n\n\n\n"
+          echo "Tag: $latest_tag"
+          latest_tag=${latest_tag/"v"/""}
+          echo "Tag: $latest_tag"
+          sed -i "s/version='.*'/version='$latest_tag'/g" ${{env.SETUP_FILE}}
+        fi
+        pip install build
+        python -m build
+
+    - name: Remove repositories
+      run: |
+        rm -rvf aq co
+
+    - name: Installing the package
+      run: |
+        PIP_PACKAGE="$(find . -name "*.tar.gz" -type f | cut -d " " -f 1)"
+        echo -e "\n\n\n\n\n\n\n"
+        echo "Package found: $PIP_PACKAGE"
+        echo -e "\n\n\n\n\n\n\n"
+        pip install "$PIP_PACKAGE"
+
+    - name: Test with pytest
+      run: |
+        pytest -s
+    - name: Get version
+      run: |
+        new_tag=$(cat ${{env.TAG_FILE}})
+        echo "New Tag: $new_tag"
+    - name: Displaying current python version
+      run: |
+        echo "Python version: $(python --version)"
+        echo "Matrix version: ${{matrix.python-version}}"
+    - name: Displaying installed version
+      run: |
+        echo "Installed version: $(python -m tty_ov)"
+        pip list
+    - name: Displaying the content of dist
+      run: |
+        echo -e "Content: \n$(ls ./dist)"
+
+    - name: Update author
+      run: |
+        git config --local user.name "${{secrets.USER_NAME_E}}"
+        git config --local user.email "${{secrets.USER_EMAIL_E}}"
+
+    - name: Publish as GitHub release
+      if: matrix.python-version == env.MATRIX_VERSION_PUBLISHING
+      run: |
+        tag_version="$(cat ${{env.TAG_FILE}})"
+        comment=$(git log -1 --pretty=format:"%s")
+        echo "Publishing $tag_version as a GitHub release"
+        echo "Tag version: $tag_version"
+        tag_description="Bump version to $tag_version: '$comment'"
+        echo "Tag description: $tag_description"
+        echo "Creating tag"
+        git tag -a "$tag_version" -m "$tag_description"
+        echo "Publishing tag"
+        git push origin $tag_version
