@@ -776,7 +776,7 @@ Here are the different status colours:
                 item[usr_input](args)
                 self.current_tty_status = self.success
                 return self.current_tty_status
-        self.print_on_tty(self.error_colour, "Invalid option")
+        self.print_on_tty(self.error_colour, "Invalid option\n")
         self.current_tty_status = self.error
         return self.current_tty_status
 

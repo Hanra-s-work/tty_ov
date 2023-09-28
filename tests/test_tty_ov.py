@@ -359,15 +359,26 @@ input_args_1 = [
 def compile_hello_world_arguments(input_args: list[str]) -> str:
     """ Compile the arguments for the hello_world function """
     function_prompt = "Hello World !\n"
+    invalid_option_prompt = "Invalid option\n"
     result = ""
+    prev = ""
     current_index = 0
     for index, item in enumerate(input_args[1:]):
+        if item == "@#" and prev == "@#":
+            result += invalid_option_prompt
         if item == "@#":
             current_index = index + 1
+            prev = item
+            continue
+        if item == "exit":
+            return result
         if item == "hello_world":
             current_index += 1
             result += function_prompt
+            prev = item
+            continue
         result += f"{index-current_index}: '{item}'\n"
+        prev = item
     return result
 
 
