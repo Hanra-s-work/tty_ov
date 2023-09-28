@@ -1,11 +1,15 @@
 # tests/test_tty_ov.py
 import os
+import sys
+import pytest
+import unittest
 import unittest.mock
 from sys import stderr
 from platform import system
 from tty_ov import TTY
 from tty_ov import ColouriseOutput
 from tty_ov import AskQuestion
+
 
 # print(f"(module help) = {help('modules')}")
 # print(f"(help: TTY) = {help(TTY)}")
@@ -337,4 +341,168 @@ def test_run_command() -> None:
     response = TTYI.run_command(["echo", "'Hello", "World'"])
     print_debug(f"response = {response}")
     TTYI.unload_basics()
+    assert response == TTYI.success
+
+
+input_args_1 = [
+    "script_name.py",
+    "hello_world",
+    "hi",
+    "how",
+    "are",
+    "you",
+    "@#",
+    "exit"
+]
+
+
+def compile_hello_world_arguments(input_args: list[str]) -> str:
+    """ Compile the arguments for the hello_world function """
+    function_prompt = "Hello World !\n"
+    result = ""
+    current_index = 0
+    for index, item in enumerate(input_args[1:]):
+        if item == "@#":
+            current_index = index + 1
+        if item == "hello_world":
+            current_index += 1
+            result += function_prompt
+        result += f"{index-current_index}: '{item}'\n"
+    return result
+
+
+expected_result_1 = f"{compile_hello_world_arguments(input_args_1)}Leaving Parent session\n"
+
+
+@pytest.mark.parametrize(
+    "command_line_args, expected_result",
+    [
+        (
+            input_args_1,
+            expected_result_1
+        )
+    ]
+)
+def test_commands_via_arguments(command_line_args, expected_result) -> None:
+    """ Test the run function """
+    original_argv = sys.argv.copy()
+    try:
+        # Set sys.argv to the command_line_args for this test case
+        sys.argv = command_line_args.copy()
+        TTYI = TTY(
+            ERR,
+            ERROR,
+            SUCCESS,
+            COLOUR_LIB,
+            ASK_QUESTION,
+            CONSTANTS,
+            False
+        )
+
+        TTYI.load_basics()
+        # The function that will call sys.argv (inside of it)
+        response = TTYI.mainloop("main")
+        print_debug(f"response = {response}")
+        TTYI.unload_basics()
+    finally:
+        sys.argv = original_argv
+    assert response == TTYI.success
+
+
+multy_oneliner_input_args_1 = [
+    "script_name.py",
+    "hello_world",
+    "hi",
+    "how",
+    "are",
+    "you",
+    "@#",
+    "exit"
+]
+multy_oneliner_expected_result_1 = compile_hello_world_arguments(
+    multy_oneliner_input_args_1[:len(multy_oneliner_input_args_1)]
+)
+multy_oneliner_expected_result_1 += "Leaving Parent session\n"
+multy_oneliner_input_args_2 = [
+    "script_name.py",
+    "hello_world",
+    "@#",
+    "hello_world",
+    "@#@#",
+    "hello_world",
+    "@#",
+    "@#",
+    "hello_world",
+    "@#",
+    "exit"
+]
+multy_oneliner_expected_result_2 = compile_hello_world_arguments(
+    multy_oneliner_input_args_2[:len(multy_oneliner_input_args_1)]
+)
+multy_oneliner_expected_result_2 += "Leaving Parent session\n"
+multy_oneliner_input_args_3 = [
+    "script_name.py",
+    "hello_world",
+    "@#",
+    "hello_world",
+    "hi",
+    "how",
+    "are",
+    "you",
+    "you",
+    "@#@#",
+    "hello_world",
+    "you",
+    "@#",
+    "hello_world",
+    "you",
+    "@#",
+    "exit"
+]
+multy_oneliner_expected_result_3 = compile_hello_world_arguments(
+    multy_oneliner_input_args_3[:len(multy_oneliner_input_args_1)]
+)
+multy_oneliner_expected_result_3 += "Leaving Parent session\n"
+
+
+@pytest.mark.parametrize(
+    "command_line_args, expected_result",
+    [
+        (
+            multy_oneliner_input_args_1,
+            multy_oneliner_expected_result_1
+        ),
+        (
+            multy_oneliner_input_args_2,
+            multy_oneliner_expected_result_2
+        ),
+        (
+            multy_oneliner_input_args_3,
+            multy_oneliner_expected_result_3
+        )
+    ]
+)
+def test_multy_oneliner_commands_via_arguments(command_line_args, expected_result) -> None:
+    """ Test the run function """
+    original_argv = sys.argv.copy()
+    try:
+        # Set sys.argv to the command_line_args for this test case
+        sys.argv = command_line_args.copy()
+        TTYI = TTY(
+            ERR,
+            ERROR,
+            SUCCESS,
+            COLOUR_LIB,
+            ASK_QUESTION,
+            CONSTANTS,
+            False
+        )
+
+        TTYI.load_basics()
+        # The function that will call sys.argv (inside of it)
+        response = TTYI.mainloop("main")
+        print_debug(f"response = {response}")
+        TTYI.unload_basics()
+    finally:
+        sys.argv = original_argv
     assert response == TTYI.success

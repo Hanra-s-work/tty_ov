@@ -1,11 +1,14 @@
 name: Trigger Workflows
 
 on:
-    workflow_run:
-        workflows: ["tty-ov-pypi", "tty-ov-gh-packages"]
-        types:
-            - completed
-    workflow_dispatch:
+  push:
+    branches:
+      - never
+  # workflow_run:
+  #     workflows: ["tty-ov-pypi", "tty-ov-gh-packages"]
+  #     types:
+  #         - completed
+  # workflow_dispatch:
 
 jobs:
   trigger_workflows:

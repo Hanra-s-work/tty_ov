@@ -1765,6 +1765,8 @@ Output:
 
     def title(self) -> None:
         """ The boot tile """
+        if self.continue_tty_loop is False:
+            return
         self.print_on_tty(
             self.default_colour,
             "Welcome to the DevOps deployer\n"
@@ -1988,19 +1990,28 @@ Output:
             else:
                 self.user_input = " ".join(sys.argv[1:])
                 self.process_input()
+            if self.continue_tty_loop is True:
+                self.print_on_tty(
+                    self.default_colour,
+                    "\n\n\n\n"
+                )
 
     def process_if_pipe_input(self) -> None:
         """ Check if the user input is a pipe input """
         if not sys.stdin.isatty():
-            self.user_input = sys.stdin.read()
-            self.process_input()
+            user_input = sys.stdin.read()
+            user_args = user_input.split(self.input_split_char)
+            self.process_complex_input(user_args)
+            if self.continue_tty_loop is True:
+                self.exit([])
 
     def mainloop(self, session_name="main") -> int:
         """ The mainloop allowing the terminal to run like any other terminals """
         self.session_name = session_name
         self.process_if_arg_input()
+        self.process_if_pipe_input()
         self.title()
-        while self.continue_tty_loop:
+        while self.continue_tty_loop is True:
             self.help_function_child_name = "help"
             self.display_prompt()
             seperated_commands = self.user_input.split(self.input_split_char)
