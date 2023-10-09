@@ -16,6 +16,7 @@
 [![Static Badge](https://img.shields.io/badge/Buy_me_a_tea-Hanra-%235F7FFF?style=flat-square&logo=buymeacoffee&label=Buy%20me%20a%20coffee&labelColor=%235F7FFF&color=%23FFDD00&link=https%3A%2F%2Fwww.buymeacoffee.com%2Fhanra)](https://www.buymeacoffee.com/hanra)
 
  A tiny terminal (just the functions I need) cross-platform implemented in python.
+This terminal currently supports piping and argument input as well as being used like a normal terminal.
 
 ## Description
 
