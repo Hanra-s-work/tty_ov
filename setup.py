@@ -14,8 +14,9 @@ setuptools.setup(
     install_requires=[
         "colorama==0.4.6",
         "prettytable==3.8.0",
-        "ask_question>=1.2.0",
-        "colourise-output>=1.1.1",
+        "ask_question==1.2.4",
+        "colourise-output==1.1.3",
+        "prompt-toolkit==3.0.39"
     ],
     author="Henry Letellier",
     author_email="henrysoftwarehouse@protonmail.com",

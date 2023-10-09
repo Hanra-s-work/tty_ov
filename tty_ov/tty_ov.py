@@ -7,6 +7,9 @@ import stat
 import time
 import locale
 import shutil
+import prompt_toolkit
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.history import InMemoryHistory
 from prettytable import PrettyTable
 from ask_question import AskQuestion
 from colourise_output import ColouriseOutput
@@ -226,6 +229,9 @@ class TTY:
         self.program_author = "(c) Henry Letellier"
         # ---- Command history ----
         self.history = []
+        # self.prompt_history = InMemoryHistory(history_strings=self.history)
+        self.prompt_history = InMemoryHistory()
+        self.history_index = 0
         # ---- The status codes ----
         self.success = success
         self.err = err
@@ -250,6 +256,7 @@ class TTY:
         self.info_colour = None
         # ---- User input tracking ----
         self.user_input = ""
+        self.user_session = prompt_toolkit.PromptSession()
         self.input_split_char = " "
         # ---- function requirering help from the help function ----
         self.help_function_child_name = "help"
@@ -1364,13 +1371,48 @@ Output:
             self.print_on_tty(self.error_colour, "~")
         self.print_on_tty(self.default_colour, " ")
 
+    def create_key_prompt_bindings(self) -> None:
+        """ Set up the functions in charge of changing the prompt with the content of the history command """
+        bindings = KeyBindings()
+
+        @bindings.add('up')
+        def _(event):
+            if self.history_index > 0:
+                self.history_index -= 1
+                self.user_session.default_buffer.text = self.history[self.history_index]
+
+        @bindings.add('down')
+        def _(event):
+            if self.history_index < len(self.history):
+                self.history_index += 1
+                if self.history_index == len(self.history):
+                    self.user_session.default_buffer.reset()
+                else:
+                    self.user_session.default_buffer.text = self.history[self.history_index]
+
+        self.user_session = prompt_toolkit.PromptSession(
+            complete_while_typing=True,
+            validate_while_typing=True,
+            enable_history_search=True,
+            key_bindings=bindings,
+            history=self.history
+        )
+
+    def process_key_inputs(self) -> str:
+        """ act depending on the special keys pressed or if entered is pressed """
+        try:
+            self.user_input = self.user_session.prompt()
+        except KeyboardInterrupt:
+            self.user_input = ""
+        return self.user_input
+
     def display_prompt(self) -> None:
         """ The function in charge of displaying a basic prompt to ask the user to enter an option """
         self.display_status_in_prompt()
         self.print_on_tty(self.prompt_colour, "(")
         self.print_on_tty(self.session_name_colour, f"{self.session_name}")
         self.print_on_tty(self.prompt_colour, f") {os.getcwd()}>")
-        self.user_input = input("")
+        self.user_input = self.process_key_inputs()
 
     def get_current_folder(self) -> str:
         """ Return the current folder """
@@ -1800,6 +1842,12 @@ Output:
         else:
             self.home = os.getcwd()
 
+    def commands_to_auto_complete(self) -> None:
+        """ Convert the available commands to a list so that it can be used for command auto-completion """
+        for i in self.options:
+            for b in i:
+                self.prompt_history.append_string(b)
+
     def load_basics(self) -> None:
         """ set the values for the variables that can be configured by the user """
         self.old_pwd = os.getcwd()
@@ -1886,6 +1934,7 @@ Output:
                 "desc": "Display/Change the token in charge of indicating the begining of a new command when many are put together"
             }
         ]
+        self.commands_to_auto_complete()
 
     def unload_basics(self) -> int:
         """ Free the ressources that were previously allocated """
@@ -2004,15 +2053,15 @@ Output:
 
     def clean_string(self, input_string: str) -> str:
         """ remove enclosing string from the run string """
-        if input_string[0] == '"':
-            input_string = input_string[1:]
-        if input_string[-1] == '"':
-            input_string = input_string[:-1]
-        if input_string[-2] == '"':
-            input_string = input_string[:-2]+input_string[-1:]
-        if input_string[-3] == '"':
-            input_string = input_string[:-3]+input_string[-2:]
-        print(f"input_string='{input_string}'")
+        if len(input_string) > 0:
+            if input_string[0] == '"':
+                input_string = input_string[1:]
+            if input_string[-1] == '"':
+                input_string = input_string[:-1]
+            if input_string[-2] == '"':
+                input_string = input_string[:-2]+input_string[-1:]
+            if input_string[-3] == '"':
+                input_string = input_string[:-3]+input_string[-2:]
         return input_string
 
     def process_if_pipe_input(self) -> None:
@@ -2021,7 +2070,6 @@ Output:
             user_input = sys.stdin.read()
             user_input = self.clean_string(user_input)
             user_args = user_input.split(self.input_split_char)
-            print(f"user_args = {user_args}")
             self.process_complex_input(user_args)
             if self.continue_tty_loop is True:
                 self.exit([])
