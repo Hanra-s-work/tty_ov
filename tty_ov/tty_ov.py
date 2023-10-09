@@ -776,7 +776,10 @@ Here are the different status colours:
                 item[usr_input](args)
                 self.current_tty_status = self.success
                 return self.current_tty_status
-        self.print_on_tty(self.error_colour, "Invalid option\n")
+        self.print_on_tty(
+            self.error_colour,
+            f"Invalid option: {str(args[0])}\n"
+        )
         self.current_tty_status = self.error
         return self.current_tty_status
 
@@ -1238,7 +1241,7 @@ Output:
             self.current_tty_status = self.success
             return self.success
         except IOError:
-            self.print_on_tty(self.error_colour, "Invalid path")
+            self.print_on_tty(self.error_colour, f"Invalid path: {str(path)}")
             self.current_tty_status = self.error
             return self.error
 
@@ -1612,7 +1615,10 @@ Output:
                 item[command](args)
                 was_found = True
         if was_found is False:
-            self.print_on_tty(self.error_colour, "Invalid option\n")
+            self.print_on_tty(
+                self.error_colour,
+                f"Invalid option: {str(command)}\n"
+            )
             self.current_tty_status = self.err
 
     def assing_colours(self) -> None:
@@ -1996,11 +2002,26 @@ Output:
                     "\n\n\n\n"
                 )
 
+    def clean_string(self, input_string: str) -> str:
+        """ remove enclosing string from the run string """
+        if input_string[0] == '"':
+            input_string = input_string[1:]
+        if input_string[-1] == '"':
+            input_string = input_string[:-1]
+        if input_string[-2] == '"':
+            input_string = input_string[:-2]+input_string[-1:]
+        if input_string[-3] == '"':
+            input_string = input_string[:-3]+input_string[-2:]
+        print(f"input_string='{input_string}'")
+        return input_string
+
     def process_if_pipe_input(self) -> None:
         """ Check if the user input is a pipe input """
         if not sys.stdin.isatty():
             user_input = sys.stdin.read()
+            user_input = self.clean_string(user_input)
             user_args = user_input.split(self.input_split_char)
+            print(f"user_args = {user_args}")
             self.process_complex_input(user_args)
             if self.continue_tty_loop is True:
                 self.exit([])
