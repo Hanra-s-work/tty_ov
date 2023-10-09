@@ -229,7 +229,6 @@ class TTY:
         self.program_author = "(c) Henry Letellier"
         # ---- Command history ----
         self.history = []
-        # self.prompt_history = InMemoryHistory(history_strings=self.history)
         self.prompt_history = InMemoryHistory()
         self.history_index = 0
         # ---- The status codes ----
@@ -286,6 +285,11 @@ class TTY:
         self.comment_token = "--"
         # ---- Pipe input ----
         self.pipe_input = None
+        # ---- Working on the auto-complete functionalities ----
+        self.auto_complete_list = []
+        self.auto_complete_index = 0
+        self.auto_complete_usr_input = ""
+        self.auto_complete_default_usr_input = ""
 
     def print_on_tty(self, colour: str, string: str) -> None:
         """ The function in charge of displaying a string on the tty """
@@ -1639,7 +1643,8 @@ Output:
                 return status
             self.current_tty_status = self.success
             return self.success
-        return self.run_command(["sudo", args])
+        args.insert(0, "sudo")
+        return self.run_command(args)
 
     def process_input(self) -> None:
         """ The function in charge of processing the user input """
@@ -1846,7 +1851,7 @@ Output:
         """ Convert the available commands to a list so that it can be used for command auto-completion """
         for i in self.options:
             for b in i:
-                self.prompt_history.append_string(b)
+                self.auto_complete_list.append(b)
 
     def load_basics(self) -> None:
         """ set the values for the variables that can be configured by the user """
@@ -1955,6 +1960,7 @@ Output:
         self.session_name_colour = None
         self.tty_colours = None
         self.options = []
+        self.auto_complete_list = []
         return self.colour_lib.unload_ressources()
 
     def import_functions_into_shell(self, functions: list[dict[str, any]]) -> int:
@@ -1965,9 +1971,11 @@ Output:
             if "desc" not in function:
                 function["desc"] = "No description provided\n"
             self.options.append(function)
+            item = list(function)[0]
+            self.auto_complete_list.append(item)
             self.print_on_tty(
                 self.success_colour,
-                f"Added function {list(function)[0]}\n"
+                f"Added function {item}\n"
             )
         self.current_tty_status = self.success
         return self.success
@@ -1978,6 +1986,7 @@ Output:
             for index, item in enumerate(function_item):
                 if item == function:
                     self.options.pop(index)
+                    self.auto_complete_list.pop(index)
                     self.print_on_tty(self.success, f"Removed function {item}")
                     self.current_tty_status = self.success
                     return self.current_tty_status
