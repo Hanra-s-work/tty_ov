@@ -381,7 +381,7 @@ input_args_1 = [
     "exit"
 ]
 
-expected_result_1 = "Hello World !\n0: 'hi'\n1: 'how'\n2: 'are'\n3: 'you'\nLeaving program"
+expected_result_1 = "Hello World !\n0: 'hi'\n1: 'how'\n2: 'are'\n3: 'you'\nLeaving program\n"
 
 
 @pytest.mark.parametrize(
