@@ -1601,6 +1601,11 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
+    def _set_file_content(self, file_path: str, content: str, mode: str = "w", encoding: str = "utf-8", newline: str = "\n") -> int:
+        with open(file_path, mode, encoding=encoding, newline=newline) as file:
+            file.write(content)
+        return self.success
+
     def run_as_admin(self, args: list) -> int:
         """ Run a command as an administrator """
         func_name = "run_as_admin"
@@ -1643,8 +1648,26 @@ Output:
                 return status
             self.current_tty_status = self.success
             return self.success
-        args.insert(0, "sudo")
-        return self.run_command(args)
+        file_name = "/tmp/your_code.sh"
+        user_input = " ".join(args)
+        self._set_file_content(
+            file_path=file_name,
+            content=user_input,
+            mode="w",
+            encoding="utf-8",
+            newline="\n"
+        )
+        new_command = [
+            "chmod",
+            "777",
+            file_name,
+            "&&",
+            "sudo",
+            "su",
+            "-c",
+            file_name
+        ]
+        return self.run_command(new_command)
 
     def process_input(self) -> None:
         """ The function in charge of processing the user input """
