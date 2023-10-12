@@ -1542,6 +1542,10 @@ if %errorLevel% == 0 (
 
     def run_as_windows_admin(self, file: str) -> int:
         """ Run a powershell script as an administrator """
+        self.print_on_tty(
+            self.info_colour,
+            "!! As of date, due to the complexity of running a command with elevated privileges, the execution status cannot be properly tracked !!\n"
+        )
         return self.run_command(
             [
                 "powershell.exe",
