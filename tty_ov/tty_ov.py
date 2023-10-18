@@ -259,6 +259,12 @@ class TTY:
         self.input_split_char = " "
         # ---- function requirering help from the help function ----
         self.help_function_child_name = "help"
+        self.help_help_options = [
+            "help", "man", ".help",
+            ".h", "/?", "-h",
+            "--h", "-help", "--help"
+        ]
+        self.enable_multi_command_help = True
         # ---- Help colour ----
         self.help_title_colour = None
         self.help_command_colour = None
@@ -290,6 +296,8 @@ class TTY:
         self.auto_complete_index = 0
         self.auto_complete_usr_input = ""
         self.auto_complete_default_usr_input = ""
+        # ---- TTY command description token inner ----
+        self.command_description_token_inner = "desc"
 
     def print_on_tty(self, colour: str, string: str) -> None:
         """ The function in charge of displaying a string on the tty """
@@ -773,7 +781,7 @@ Here are the different status colours:
     def process_help_call(self, args: list) -> int:
         """ Process the inputs for the help calls """
         usr_input = args[0].lower()
-        if usr_input in ("help", "man", ".help", ".h", "/?", "-h", "--h", "-help", "--help"):
+        if usr_input in self.help_help_options:
             self.help_help()
             self.current_tty_status = self.success
             return self.success
@@ -782,9 +790,9 @@ Here are the different status colours:
             self.current_tty_status = self.success
             return self.current_tty_status
         for item in self.options:
-            if usr_input in item:
+            if usr_input == list(item)[0]:
                 self.help_function_child_name = usr_input
-                item[usr_input](args)
+                item[usr_input](args[1:])
                 self.current_tty_status = self.success
                 return self.current_tty_status
         self.print_on_tty(
@@ -796,8 +804,18 @@ Here are the different status colours:
 
     def help(self, args: list) -> int:
         """ The help function in charge of displaying the available options to the user """
-        if len(args) > 0 and args[0] != '':
-            return self.process_help_call(args)
+        argsc = len(args)
+        if argsc > 0 and args[0] != '':
+            if argsc > 1 and self.enable_multi_command_help is True:
+                global_status = self.success
+                for i in enumerate(args):
+                    status = self.process_help_call(args[i[0]:])
+                    if status != self.success:
+                        global_status = self.error
+            else:
+                global_status = self.process_help_call(args)
+            self.current_tty_status = global_status
+            return global_status
         self.print_on_tty(self.reset_colour, "Available commands:\n")
         if self.options is None:
             self.print_on_tty(self.reset_colour, "No commands available")
@@ -1887,83 +1905,133 @@ Output:
         self.assing_colours()
         self.colour_lib.init_pallet()
         self.options = [
-            {"help": self.help, "desc": "Display this help section"},
-            {"man": self.help, "desc": "Display this help section"},
-            {".help": self.help, "desc": "Display this help section"},
-            {".h": self.help, "desc": "Display this help section"},
-            {"/?": self.help, "desc": "Display this help section"},
-            {"-h": self.help, "desc": "Display this help section"},
-            {"--h": self.help, "desc": "Display this help section"},
-            {"-help": self.help, "desc": "Display this help section"},
-            {"--help": self.help, "desc": "Display this help section"},
-            {"setenv": self.setenv, "desc": "Set a variable in the environement"},
+            {
+                "help": self.help,
+                self.command_description_token_inner: "Display this help section"
+            },
+            {
+                "man": self.help,
+                self.command_description_token_inner: "Display this help section"
+            },
+            {
+                ".help": self.help,
+                self.command_description_token_inner: "Display this help section"
+            },
+            {".h": self.help, self.command_description_token_inner: "Display this help section"},
+            {"/?": self.help, self.command_description_token_inner: "Display this help section"},
+            {"-h": self.help, self.command_description_token_inner: "Display this help section"},
+            {
+                "--h": self.help,
+                self.command_description_token_inner: "Display this help section"
+            },
+            {
+                "-help": self.help,
+                self.command_description_token_inner: "Display this help section"
+            },
+            {
+                "--help": self.help,
+                self.command_description_token_inner: "Display this help section"
+            },
+            {
+                "setenv": self.setenv,
+                self.command_description_token_inner: "Set a variable in the environement"
+            },
             {
                 "unsetenv": self.unsetenv,
-                "desc": "Remove a variable from the environement"
+                self.command_description_token_inner: "Remove a variable from the environement"
             },
-            {"exit": self.exit, "desc": "Close the current menu"},
+            {
+                "exit": self.exit,
+                self.command_description_token_inner: "Close the current menu"
+            },
             {
                 "abort": self.kill,
-                "desc": "Exit the program (This will kill the program and any child processes)"
+                self.command_description_token_inner: "Exit the program (This will kill the program and any child processes)"
             },
-            {"hello_world": self.hello_world, "desc": "Display a Hello World"},
-            {"env": self.env, "desc": "Display the environement variables"},
+            {
+                "hello_world": self.hello_world,
+                self.command_description_token_inner: "Display a Hello World"
+            },
+            {"env": self.env, self.command_description_token_inner: "Display the environement variables"},
             {
                 "env++": self.env_plus_plus,
-                "desc": "Display the environement variables using different colours"
+                self.command_description_token_inner: "Display the environement variables using different colours"
             },
             {
                 "?": self.display_status_code,
-                "desc": "Display the status code of the last function called"
+                self.command_description_token_inner: "Display the status code of the last function called"
             },
-            {"cd": self.change_directory,
-                "desc": "Change the current working directory"},
-            {"pwd": self.pwd, "desc": "Display the path to the directory in wich we are located"},
+            {
+                "cd": self.change_directory,
+                self.command_description_token_inner: "Change the current working directory"
+            },
+            {
+                "pwd": self.pwd, self.command_description_token_inner:
+                "Display the path to the directory in wich we are located"
+            },
             {
                 "version": self.version,
-                "desc": "Display the current version of the program"
+                self.command_description_token_inner: "Display the current version of the program"
             },
-            {"author": self.author, "desc": "Display the author of the program"},
+            {
+                "author": self.author,
+                self.command_description_token_inner: "Display the author of the program"
+            },
             {
                 "session_name": self.process_session_name,
-                "desc": "Change the name of the current session"
+                self.command_description_token_inner: "Change the name of the current session"
             },
-            {"client": self.client, "desc": "Display the client of the program"},
+            {
+                "client": self.client,
+                self.command_description_token_inner: "Display the client of the program"
+            },
             {
                 "history": self.show_history,
-                "desc": "Display the previous commands that were run"
+                self.command_description_token_inner: "Display the previous commands that were run"
             },
-            {"ls": self.bind_ls, "desc": "List all files in the current folder"},
-            {"dir": self.bind_ls, "desc": "List all files in the current folder"},
+            {
+                "ls": self.bind_ls, self.command_description_token_inner:
+                "List all files in the current folder"
+            },
+            {
+                "dir": self.bind_ls, self.command_description_token_inner:
+                "List all files in the current folder"
+            },
             {
                 "mkdir": self.make_directory,
-                "desc": "Create a directory in the present path"
+                self.command_description_token_inner: "Create a directory in the present path"
             },
-            {"touch": self.touch, "desc": "Create a file in the present path"},
+            {
+                "touch": self.touch,
+                self.command_description_token_inner: "Create a file in the present path"
+            },
             {
                 "rm": self.remove_file,
-                "desc": "Remove a file or directory if present in the path"
+                self.command_description_token_inner: "Remove a file or directory if present in the path"
             },
             {
                 "rmdir": self.remove_directory,
-                "desc": "Remove a directory if present in the path"
+                self.command_description_token_inner: "Remove a directory if present in the path"
             },
-            {"run": self.run_command, "desc": "Run a command in the system terminal"},
+            {
+                "run": self.run_command,
+                self.command_description_token_inner: "Run a command in the system terminal"
+            },
             {
                 "is_admin": self.check_admin,
-                "desc": "Return True if the system has elevated privileges."
+                self.command_description_token_inner: "Return True if the system has elevated privileges."
             },
             {
                 "super_run": self.run_as_admin,
-                "desc": "Run a command using elevated privileges"
+                self.command_description_token_inner: "Run a command using elevated privileges"
             },
             {
                 "command_seperator": self.command_seperator,
-                "desc": "Display/Change the token in charge of indicating the begining of a new command when many are put together"
+                self.command_description_token_inner: "Display/Change the token in charge of indicating the beginning of a new command when many are put together"
             },
             {
                 "comment_token": self.update_comment_token,
-                "desc": "Display/Change the token in charge of indicating the begining of a new command when many are put together"
+                self.command_description_token_inner: "Display/Change the token in charge of indicating the beginning of a new command when many are put together"
             }
         ]
         self.commands_to_auto_complete()
