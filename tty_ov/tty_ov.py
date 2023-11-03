@@ -1691,6 +1691,17 @@ Output:
         ]
         return self.run_command(new_command)
 
+    def is_exactly_in_string(self, string1: str, string2: str) -> bool:
+        """ Check if string1 is exactly in string2 """
+        string1_length = string1
+        string2_length = string2
+        if string1_length != string2_length:
+            return False
+        for index, item in enumerate(string1):
+            if item != string2[index]:
+                return False
+        return True
+
     def process_input(self) -> None:
         """ The function in charge of processing the user input """
         if self.user_input == "":
@@ -1703,9 +1714,10 @@ Output:
         command = command[0].lower()
         was_found = False
         for item in self.options:
-            if command == item:
+            if self.is_exactly_in_string(list(item)[0], command) is True:
                 item[command](args)
                 was_found = True
+                break
         if was_found is False:
             self.print_on_tty(
                 self.error_colour,
