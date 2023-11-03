@@ -13,7 +13,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         "colorama==0.4.6",
-        "prettytable==3.8.0",
+        "prettytable==3.9.0",
         "ask_question==1.2.4",
         "colourise-output==1.1.3",
         "prompt-toolkit==3.0.39"
