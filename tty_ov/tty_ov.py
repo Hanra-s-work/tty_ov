@@ -1703,7 +1703,7 @@ Output:
         command = command[0].lower()
         was_found = False
         for item in self.options:
-            if command in item:
+            if command == item:
                 item[command](args)
                 was_found = True
         if was_found is False:
