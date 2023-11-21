@@ -3,9 +3,6 @@ File in charge of emulating a basic tty to universalise the interface
 """
 import os
 import sys
-import stat
-import time
-import locale
 import shutil
 import prompt_toolkit
 from prompt_toolkit.key_binding import KeyBindings
@@ -13,7 +10,7 @@ from prompt_toolkit.history import InMemoryHistory
 from prettytable import PrettyTable
 from ask_question import AskQuestion
 from colourise_output import ColouriseOutput
-from .hl_ls import HLLS
+from hl_ls import HLLs
 
 
 
