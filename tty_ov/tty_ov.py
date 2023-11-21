@@ -5,6 +5,7 @@ import os
 import sys
 import shutil
 import prompt_toolkit
+from typing import List, Dict
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.history import InMemoryHistory
 from prettytable import PrettyTable
@@ -13,13 +14,10 @@ from colourise_output import ColouriseOutput
 from hl_ls import HLLs
 
 
-
-
-
 class TTY:
     """ The class in charge of simulating a tty """
 
-    def __init__(self, err: int, error: int, success: int, colour_lib: ColouriseOutput, ask_question: AskQuestion, colours: dict, colourise_output: bool = True) -> None:
+    def __init__(self, err: int, error: int, success: int, colour_lib: ColouriseOutput, ask_question: AskQuestion, colours: Dict, colourise_output: bool = True) -> None:
         # ---- The version of the program ----
         self.__version__ = "1.0.0"
         # ---- TTY general info ----
@@ -112,7 +110,7 @@ class TTY:
         except IOError:
             return self.error
 
-    def list_to_str(self, hl_list: list[any], join: str = " ") -> str:
+    def list_to_str(self, hl_list: List[any], join: str = " ") -> str:
         """ Convert a list to a string """
         res = ""
         list_length = len(hl_list)-1
@@ -122,7 +120,7 @@ class TTY:
                 res += join
         return res
 
-    def version(self, args: list) -> int:
+    def version(self, args: List) -> int:
         """ Display the version of the program """
         func_name = "version"
         if self.help_function_child_name == func_name:
@@ -142,7 +140,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def show_history(self, args: list) -> int:
+    def show_history(self, args: List) -> int:
         """ Display the history of the commands """
         func_name = "history"
         if self.help_function_child_name == func_name:
@@ -172,7 +170,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def process_session_name(self, args: list) -> int:
+    def process_session_name(self, args: List) -> int:
         """ Change the name of the current session """
         func_name = "session_name"
         if self.help_function_child_name == func_name:
@@ -210,7 +208,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def author(self, args: list) -> int:
+    def author(self, args: List) -> int:
         """ Display the author of the program """
         func_name = "author"
         if self.help_function_child_name == func_name:
@@ -230,7 +228,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def client(self, args: list) -> int:
+    def client(self, args: List) -> int:
         """ Display the client of the program """
         func_name = "client"
         if self.help_function_child_name == func_name:
@@ -253,7 +251,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def env(self, args: list) -> int:
+    def env(self, args: List) -> int:
         """ Display the environement variables """
         func_name = "env"
         if self.help_function_child_name == func_name:
@@ -282,7 +280,7 @@ Output:
         self.print_on_tty(self.success_colour, f"{self.is_admin()}\n")
         self.current_tty_status = self.success
 
-    def env_plus_plus(self, args: list) -> int:
+    def env_plus_plus(self, args: List) -> int:
         """ Display the environement variables """
         func_name = "env++"
         if self.help_function_child_name == func_name:
@@ -306,7 +304,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def setenv(self, args: list) -> int:
+    def setenv(self, args: List) -> int:
         """ Function in charge of setting a variable in the environement of the shell """
         func_name = "setenv"
         if self.help_function_child_name == func_name:
@@ -390,7 +388,7 @@ Output:
         self.current_tty_status = self.err
         return self.err
 
-    def unsetenv(self, args: list) -> int:
+    def unsetenv(self, args: List) -> int:
         """ Function in charge of unsetting a variable in the environement of the shell """
         func_name = "unsetenv"
         if self.help_function_child_name == func_name:
@@ -474,7 +472,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def display_status_code(self, args: list) -> None:
+    def display_status_code(self, args: List) -> None:
         """ Display the status code of the last function """
         func_name = "?"
         if self.help_function_child_name == func_name:
@@ -577,7 +575,7 @@ Here are the different status colours:
         )
         self.current_tty_status = self.success
 
-    def process_help_call(self, args: list) -> int:
+    def process_help_call(self, args: List) -> int:
         """ Process the inputs for the help calls """
         usr_input = args[0].lower()
         if usr_input in self.help_help_options:
@@ -601,7 +599,7 @@ Here are the different status colours:
         self.current_tty_status = self.error
         return self.current_tty_status
 
-    def help(self, args: list) -> int:
+    def help(self, args: List) -> int:
         """ The help function in charge of displaying the available options to the user """
         argsc = len(args)
         if argsc > 0 and args[0] != '':
@@ -634,7 +632,7 @@ Here are the different status colours:
         self.current_tty_status = self.success
         return self.current_tty_status
 
-    def pwd(self, args: list) -> int:
+    def pwd(self, args: List) -> int:
         """ The function in charge of displaying the current working directory """
         func_name = "pwd"
         if self.help_function_child_name == func_name:
@@ -700,7 +698,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def make_directory(self, args: list) -> int:
+    def make_directory(self, args: List) -> int:
         """ Create a directory """
         func_name = "mkdir"
         if self.help_function_child_name == func_name:
@@ -817,7 +815,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def touch(self, arg: list) -> int:
+    def touch(self, arg: List) -> int:
         """ Create a file in the present path """
         func_name = "touch"
         if self.help_function_child_name == func_name:
@@ -898,7 +896,7 @@ Output:
             return self.success
         return self.error
 
-    def remove_directory(self, args: list) -> int:
+    def remove_directory(self, args: List) -> int:
         """ Remove a directory """
         func_name = "rmdir"
         if self.help_function_child_name == func_name:
@@ -992,7 +990,7 @@ Output:
             self.current_tty_status = self.err
             return self.error
 
-    def remove_file(self, args: list) -> int:
+    def remove_file(self, args: List) -> int:
         """ Remove a file or a directory """
         func_name = "rm"
         if self.help_function_child_name == func_name:
@@ -1097,7 +1095,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def change_directory(self, args: list) -> int:
+    def change_directory(self, args: List) -> int:
         """ The function in charge of changing the current working directory """
         func_name = "cd"
         if self.help_function_child_name == func_name:
@@ -1141,7 +1139,7 @@ Output:
         self.current_tty_status = self.error
         return self.error
 
-    def exit(self, args: list) -> int:
+    def exit(self, args: List) -> int:
         """ The function in charge of exiting the layer in which the user is located """
         func_name = "exit"
         if self.help_function_child_name == func_name:
@@ -1163,7 +1161,7 @@ Output:
         self.continue_tty_loop = False
         return self.current_tty_status
 
-    def kill(self, args: list) -> int:
+    def kill(self, args: List) -> int:
         """ The function in charge of abruptly stopping the program (not recommended) """
         func_name = "abort"
         if self.help_function_child_name == func_name:
@@ -1240,7 +1238,7 @@ Output:
         path = os.getcwd()
         path = path.replace("\\", "/")
 
-    def bind_ls(self, args: list) -> int:
+    def bind_ls(self, args: List) -> int:
         """ Bind the ls function to the ls command """
         func_name = "ls"
         if self.help_function_child_name in (func_name, "dir"):
@@ -1263,7 +1261,7 @@ Output:
         self.current_tty_status = status
         return status
 
-    def hello_world(self, args: list) -> int:
+    def hello_world(self, args: List) -> int:
         """ This is a function in charge of displaying a Hello World and the passed arguments """
         func_name = "hello_world"
         if self.help_function_child_name == func_name:
@@ -1287,7 +1285,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def run_command(self, args: list) -> int:
+    def run_command(self, args: List) -> int:
         """ Run a command in the host's shell environement """
         help_command = "run"
         if self.help_function_child_name == help_command:
@@ -1376,7 +1374,7 @@ if %errorLevel% == 0 (
             ]
         )
 
-    def check_admin(self, args: list) -> int:
+    def check_admin(self, args: List) -> int:
         """ Check if the program has admin rights """
         func_name = "check_admin"
         if self.help_function_child_name == func_name:
@@ -1427,7 +1425,7 @@ Output:
             file.write(content)
         return self.success
 
-    def run_as_admin(self, args: list) -> int:
+    def run_as_admin(self, args: List) -> int:
         """ Run a command as an administrator """
         func_name = "run_as_admin"
         if self.help_function_child_name == func_name:
@@ -1558,7 +1556,7 @@ Output:
         self.env_definition_colour = self.tty_colours["env_definition_colour"]
         self.session_name_colour = self.tty_colours["session_name_colour"]
 
-    def command_seperator(self, args: list) -> int:
+    def command_seperator(self, args: List) -> int:
         """ Display/Change the token in charge of indicating the beginning of a new command when many are put together """
         func_name = "command_seperator"
         if self.help_function_child_name == func_name:
@@ -1619,7 +1617,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def update_comment_token(self, args: list) -> int:
+    def update_comment_token(self, args: List) -> int:
         """ Display/Change the token in charge of indicating the beginning of a new comment """
         func_name = "comment_token"
         if self.help_function_child_name == func_name:
@@ -1869,10 +1867,10 @@ Output:
         self.auto_complete_list = []
         return self.colour_lib.unload_ressources()
 
-    def import_functions_into_shell(self, functions: list[dict[str, any]]) -> int:
+    def import_functions_into_shell(self, functions: List[Dict[str, any]]) -> int:
         """ Import functions into the shell """
         for function in functions:
-            if function is None or isinstance(function, dict) != True:
+            if function is None or isinstance(function, Dict) != True:
                 continue
             if "desc" not in function:
                 function["desc"] = "No description provided\n"
@@ -1886,7 +1884,7 @@ Output:
         self.current_tty_status = self.success
         return self.success
 
-    def remove_function_from_options(self, function: dict[str, any]) -> int:
+    def remove_function_from_options(self, function: Dict[str, any]) -> int:
         """ Remove a function from the options """
         for function_item in self.options:
             for index, item in enumerate(function_item):
@@ -1903,7 +1901,7 @@ Output:
         self.current_tty_status = self.error
         return self.current_tty_status
 
-    def remove_functions_from_shell(self, functions: list[dict[str, any]]) -> int:
+    def remove_functions_from_shell(self, functions: List[Dict[str, any]]) -> int:
         """ Remove functions from the shell """
         global_status = self.success
         for function in functions:
@@ -1924,13 +1922,13 @@ Output:
         else:
             self.print_on_tty(self.error_colour, goodbye_message)
 
-    def run_complex_input(self, complex_input: list[str]) -> None:
+    def run_complex_input(self, complex_input: List[str]) -> None:
         """ Run a complex input """
         for item in complex_input:
             self.user_input = item
             self.process_input()
 
-    def process_complex_input(self, usr_input: list) -> None:
+    def process_complex_input(self, usr_input: List) -> None:
         """ process multiple command input if provided """
         command_list = []
         buffer = ""
