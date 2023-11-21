@@ -1,0 +1,66 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.enabledLanguageIds": [
+			"asciidoc",
+			"c",
+			"cpp",
+			"csharp",
+			"css",
+			"elixir",
+			"erlang",
+			"git-commit",
+			"go",
+			"graphql",
+			"handlebars",
+			"haskell",
+			"html",
+			"jade",
+			"java",
+			"javascript",
+			"javascriptreact",
+			"json",
+			"jsonc",
+			"jupyter",
+			"latex",
+			"less",
+			"markdown",
+			"php",
+			"plaintext",
+			"python",
+			"pug",
+			"restructuredtext",
+			"rust",
+			"scala",
+			"scss",
+			"scminput",
+			"swift",
+			"text",
+			"typescript",
+			"typescriptreact",
+			"vue",
+			"yaml",
+			"yml",
+			"COBOL",
+			"ACUCOBOL"
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-python.autopep8",
+			"codezombiech.gitignore",
+			"ms-python.isort",
+			"visualstudioexptteam.vscodeintellicode",
+			"giyyapan.pyformat",
+			"christian-kohler.path-intellisense",
+			"ms-python.vscode-pylance",
+			"ms-python.pylint",
+			"ms-python.python",
+			"foxundermoon.shell-format"
+		]
+	}
+}
