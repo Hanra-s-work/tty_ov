@@ -2,6 +2,7 @@
 File in charge of easing the import of the program
 """
 from .tty_ov import TTY
+from .tty_ov import HLLs
 from .tty_ov import ColouriseOutput as CO
 from .tty_ov import AskQuestion as AQ
 

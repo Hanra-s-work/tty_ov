@@ -1,4 +1,4 @@
-from tty_ov import *
+from .tty_ov import TTY, ColouriseOutput, AskQuestion
 
 if __name__ == "__main__":
     ERR = 84

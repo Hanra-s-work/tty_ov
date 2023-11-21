@@ -11,7 +11,7 @@ from prompt_toolkit.history import InMemoryHistory
 from prettytable import PrettyTable
 from ask_question import AskQuestion
 from colourise_output import ColouriseOutput
-from hl_ls import HLLs
+from .hl_ls import HLLs
 
 
 class TTY:
