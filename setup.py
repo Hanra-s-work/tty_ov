@@ -16,7 +16,7 @@ setuptools.setup(
         "prettytable==3.9.0",
         "ask_question==1.2.4",
         "colourise-output==1.1.5",
-        "prompt-toolkit==3.0.39"
+        "prompt-toolkit==3.0.47"
     ],
     author="Henry Letellier",
     author_email="henrysoftwarehouse@protonmail.com",
