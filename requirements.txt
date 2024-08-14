@@ -1,4 +1,4 @@
 setuptools == 70.0.0
 wheel == 0.41.2
-build == 1.0.0
+build ==1.2.1
 pytest ==7.4.4
