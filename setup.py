@@ -15,7 +15,7 @@ setuptools.setup(
         "colorama==0.4.6",
         "prettytable==3.11.0",
         "ask_question==1.2.7",
-        "colourise-output==1.1.5",
+        "colourise-output==1.1.6",
         "prompt-toolkit==3.0.47"
     ],
     author="Henry Letellier",
