@@ -2,4 +2,4 @@ colorama == 0.4.6
 prettytable ==3.16.0
 ask_question ==1.2.8
 colourise-output ==1.1.6
-prompt-toolkit ==3.0.50
+prompt-toolkit ==3.0.51
