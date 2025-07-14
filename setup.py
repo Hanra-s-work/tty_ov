@@ -14,7 +14,7 @@ setuptools.setup(
     install_requires=[
         "colorama==0.4.6",
         "prettytable==3.16.0",
-        "ask_question==1.2.8",
+        "ask_question==1.2.12",
         "colourise-output==1.1.6",
         "prompt-toolkit==3.0.50"
     ],
