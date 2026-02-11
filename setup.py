@@ -26,6 +26,7 @@ setuptools.setup(
     url="https://github.com/Hanra-s-work/tty_ov",
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

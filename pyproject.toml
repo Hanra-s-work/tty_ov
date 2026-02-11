@@ -1,5 +1,102 @@
+# 
+# +==== BEGIN tty_ov =================+
+# LOGO: 
+# ..@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# .@...........................#@
+# @############################.@
+# @...........................@.@
+# @..#######################..@.@
+# @.#########################.@.@
+# @.##>_#####################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @..#######################..@.@
+# @...........................@.@
+# @..+----+______________.....@.@
+# @..+....+______________+....@.@
+# @..+----+...................@.@
+# @...........................@.#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.
+# /STOP
+# PROJECT: tty_ov
+# FILE: pyproject.toml
+# CREATION DATE: 06-11-2025
+# LAST Modified: 13:49:22 06-11-2025
+# DESCRIPTION: 
+# A module that allows you to display text with a few boilers (i.e. put your text in a square for titles). It also allows to log to the terminal by wrapping around the logging library.
+# /STOP
+# COPYRIGHT: (c) Asperguide
+# PURPOSE: File in charge of containing the required configuration to allow the python code to compile as a library.
+# // AR
+# +==== END tty_ov =================+
+# 
+
 # pyproject.toml
 
 [build-system]
-requires = ["setuptools >= 46.4.0", "wheel >= 0.36.2", "pep517 >= 0.11.0"]
+requires = ["setuptools >= 80.9.0", "wheel >= 0.36.2", "pep517 >= 0.11.0"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.packages.find]
+# Include the top-level package and any of its subpackages (tty_ov.src, etc.)
+include = ["tty_ov", "tty_ov.*"]
+exclude = ["lenv", "menv", "wenv", "env", "venv", ".env", ".venv"]
+
+[project]
+name = "tty_ov"
+version = '1.0.0'
+license = "MIT"
+authors = [
+    { name = "Henry Letellier", email = "henrysoftwarehouse@protonmail.com" },
+]
+maintainers = [
+    { name = "Henry Letellier", email = "henrysoftwarehouse@protonmail.com" },
+]
+dependencies = [
+    "colorama==0.4.6",
+    "prettytable==3.17.0",
+    "ask_question==1.2.12",
+    "colourise-output==1.1.6",
+    "prompt-toolkit==3.0.52",
+]
+description = "A module that allows you to display text with a few boilers (i.e. put your text in a square for titles). It also allows to log to the terminal by wrapping around the logging library."
+license-files = ["LICENSE"]
+readme = { file = "README.md", content-type = "text/markdown" }
+keywords = [
+    "logger",
+    "terminal",
+    "logging",
+    "lightweight",
+    "colour",
+    "stdout",
+    "stderr",
+    "optimised",
+    "wrapper",
+    "pure python",
+    "python",
+]
+classifiers = [
+    "Environment :: Console",
+    "Natural Language :: English",
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    # Specify the Python versions you support here.
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = "https://github.com/Hanra-s-work/tty_ov"
+Documentation = "https://github.com/Hanra-s-work/tty_ov/blob/main/README.md"
+Repository = "https://github.com/Hanra-s-work/tty_ov.git"
+Issues = "https://github.com/Hanra-s-work/tty_ov/issues"

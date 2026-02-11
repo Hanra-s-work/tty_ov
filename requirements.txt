@@ -1,5 +1,41 @@
-setuptools ==82.0.0
-wheel ==0.46.3
-build ==1.4.0
-pytest ==8.4.2;python_version<="3.9"
-pytest ==9.0.2;python_version>="3.10"
+# 
+# +==== BEGIN display_tty =================+
+# LOGO: 
+# ..@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# .@...........................#@
+# @############################.@
+# @...........................@.@
+# @..#######################..@.@
+# @.#########################.@.@
+# @.##>_#####################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @..#######################..@.@
+# @...........................@.@
+# @..+----+______________.....@.@
+# @..+....+______________+....@.@
+# @..+----+...................@.@
+# @...........................@.#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.
+# /STOP
+# PROJECT: display_tty
+# FILE: requirements.txt
+# CREATION DATE: 06-11-2025
+# LAST Modified: 10:22:47 06-11-2025
+# DESCRIPTION: 
+# A module that allows you to display text with a few boilers (i.e. put your text in a square for titles). It also allows to log to the terminal by wrapping around the logging library.
+# /STOP
+# COPYRIGHT: (c) Asperguide
+# PURPOSE: File containing an easy way of installing the dependencies for the module.
+# // AR
+# +==== END display_tty =================+
+# 
+# A golden source way of installing the required dependencies by relying on the toml project (this is because it is a child optional dependency)
+-e .
+
+# ! Warning, if you are installing the requirements.txt
+# as a way to develop with the library, please run the 
+# following command once the installation has completed
+# pip uninstall display_tty -y
