@@ -1,0 +1,19 @@
+FROM hanralatalliard/doxygen:latest
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Setting the environement variable to store the output location
+ENV DOXYGEN_OUTPUT_DIR=/app/results
+ENV GENERATION_DIR=doxygen_generation
+ENV SOURCE_DIR=display_tty
+
+# Create the generated output directory
+RUN mkdir -p ${DOXYGEN_OUTPUT_DIR}
+
+# Copy the necessary folders into the container
+COPY ${GENERATION_DIR} /app/${GENERATION_DIR}
+COPY ${SOURCE_DIR} /app/${SOURCE_DIR}
+
+# Ensure the Doxyfile is accessible and run doxygen
+CMD ["/bin/bash", "-c", "cp -vf doxygen_generation/Doxyfile ./Doxyfile && doxygen && ls -a && cp -rvf documentation ${SOURCE_DIR} ${DOXYGEN_OUTPUT_DIR}"]

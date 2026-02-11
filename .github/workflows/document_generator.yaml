@@ -1,0 +1,540 @@
+name: doxygen_generator
+
+# version: 1.0.0
+#          1.0.1 # Removed the need of secrets for the user e-mail and name.
+#          1.0.2 # Change the tag to only trigger when a -doc is appended to it.
+#          1.0.3 # Update the way the tag is processed in the flow.
+#          1.0.4 # The page is now published from the main branch regardless of the branch having triggered the flow.
+#          1.0.5 # The flow will only run specific parts of itself depending on the trigger method.
+#          1.0.6 # The flow will trigger the push method after the initial trigger if it had been triggered by a tag.
+#          1.0.7 # The flow does not need to trigger the push method due to how tags work.
+
+on:
+  push:
+    tags:
+      - "v*.*.*-doc"
+    branches:
+      - main
+      - dev-workflow-doxygen
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# The environment variables used for generation and upload
+env:
+  # Variables for managing required containers
+  DOCKER_NAME: hanralatalliard/doxygen
+  # variables managing name publishing
+  COMMIT_TITLE: "There is no title"
+  COMMIT_MESSAGE: "There is no message"
+  #Variables for the extras scripts
+  DOXYFILE: doxygen_generation/Doxyfile
+  MAN_INSTALL_PATH: doxygen_generation/man/installer.sh
+  HTML_SRC_PATH: doxygen_generation/html
+  HTML_SERVER_SPAWNER_NAME: launch_server.sh
+  HTML_ICON_PATH: doxygen_generation/favicon/
+  # Variables for specifying build locations
+  HTML_GENERATION: html
+  TEMPORARY_FOLDER: tmp_documentation
+  OUTPUT_GENERATION: documentation
+  # Variables for managin the tags
+  SETUP_FILE: setup.py
+  TAG_FILE: version.txt
+  IS_RELEASE: is_release.txt
+  LATEST_TAG: "${{ github.ref_name }}"
+  # Variable containing the reference key for the cache of each main section
+  CACHE_KEY: doxygen-cache-key
+  CACHE_KEY_CLEANED: doxygen-cache-key-cleaned
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+# The jobs in charge of building everything
+jobs:
+  build_doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Fetch doxygen docker
+        run: |
+          docker pull ${{env.DOCKER_NAME}}
+      - name: Create required folders
+        run: |
+          mkdir -p ${{ env.OUTPUT_GENERATION }}/${{ env.HTML_GENERATION }}
+      - name: Create dummy page for html renders
+        run: |
+          HTML_CONTENT='<!DOCTYPE html><html lang="en"><head>'
+          HTML_CONTENT+=" <meta charset='UTF-8'>"
+          HTML_CONTENT+=" <meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+          HTML_CONTENT+=" <title>Dummy Page</title>"
+          HTML_CONTENT+=" <style>"
+          HTML_CONTENT+="   body {font-family: Arial, sans-serif;background-color: #f8f9fa;color: #333;margin: 0;padding: 0;display: flex;justify-content: center;align-items: center;height: 100vh;}"
+          HTML_CONTENT+="   .container {text-align: center;padding: 20px;background: #fff;border: 1px solid #ddd;border-radius: 8px;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);}"
+          HTML_CONTENT+="   h1 {color: #007bff;}"
+          HTML_CONTENT+="   p {font-size: 1.1em;}"
+          HTML_CONTENT+="   a {color: #007bff;text-decoration: none;}"
+          HTML_CONTENT+="   a:hover {text-decoration: underline;}"
+          HTML_CONTENT+=" </style>"
+          HTML_CONTENT+="</head><body>"
+          HTML_CONTENT+="<body>"
+          HTML_CONTENT+=" <div class='container'>"
+          HTML_CONTENT+="   <h1>Welcome to the Dummy Documentation</h1>"
+          HTML_CONTENT+="   <p>This is a placeholder page for generated documentation.<br>If you see this is that the doxyfile in the action did not generate html content (or generated it in the wrong place)</p>"
+          HTML_CONTENT+="   <p>To learn more, visit <a href="https://www.doxygen.org/">Doxygen</a>.</p>"
+          HTML_CONTENT+=" </div>"
+          HTML_CONTENT+="</body></html>"
+          echo -e "$HTML_CONTENT" > ${{env.OUTPUT_GENERATION}}/${{env.HTML_GENERATION}}/index.html
+      - name: Run doxygen docker
+        run: |
+          RUN_COMMAND="cd /app && cp -v ${{ env.DOXYFILE }} ./Doxyfile && doxygen ; exit $?"
+          docker run -t -v "$(pwd)":"/app" -v "$(pwd)/${{ env.OUTPUT_GENERATION }}":"/${{ env.OUTPUT_GENERATION }}" ${{ env.DOCKER_NAME }} /bin/bash -c "$RUN_COMMAND"
+      - name: Reclaim ownership
+        run: |
+          echo "Owning the generated content (replacing root by the current user account)"
+          sudo chown -Rv $USER:$USER ${{ env.OUTPUT_GENERATION }}
+          echo "Granting all users read-write rights on the files"
+          chmod -Rv a+rw ${{ env.OUTPUT_GENERATION }}
+
+      - name: Display generated content
+        run: |
+          echo "Displaying the content of: ${{env.OUTPUT_GENERATION}}"
+          ls -a ${{ env.OUTPUT_GENERATION }}
+          echo "Displaying the content of: ${{env.OUTPUT_GENERATION}}/${{env.HTML_GENERATION}}"
+          ls -a ${{ env.OUTPUT_GENERATION }}/${{ env.HTML_GENERATION }}
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache@v5
+        with:
+          key: ${{ env.CACHE_KEY }}
+          path: ${{ env.OUTPUT_GENERATION }}
+          enableCrossOsArchive: true
+
+  clean_up_generation:
+    runs-on: ubuntu-latest
+    needs: build_doxygen
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Get generated documentation
+        id: cache-documentation-restore
+        uses: actions/cache@v5
+        with:
+          key: ${{ env.CACHE_KEY }}
+          path: ${{ env.OUTPUT_GENERATION }}
+          enableCrossOsArchive: true
+          restore-keys: |
+            doxygen-cache-key
+            cache-key-doxygen
+            doxygen_cache_key
+            cache_key_doxygen
+
+      - name: Making temporary folder permanent
+        run: |
+          echo "Content at './'"  
+          ls -a ./
+          echo "Copying content of ${{ env.OUTPUT_GENERATION }} to ${{env.TEMPORARY_FOLDER}}"
+          mkdir -p ${{ env.TEMPORARY_FOLDER}}
+          cp -rvf ${{ env.OUTPUT_GENERATION }} ${{env.TEMPORARY_FOLDER}}
+          echo "Content of: ${{ env.TEMPORARY_FOLDER }}/"
+          ls -a ${{ env.TEMPORARY_FOLDER }}/
+          echo "Content of: ${{ env.OUTPUT_GENERATION }}/"
+          ls -a ${{ env.OUTPUT_GENERATION }}/
+
+      - name: Listing content of temporary folder
+        run: |
+          echo "Contents of ${{env.TEMPORARY_FOLDER}}"
+          ls -a ${{env.TEMPORARY_FOLDER}}
+
+      - name: Copy the icons to the generated documentation
+        run: |
+          echo "Content of temporary folder: ${{ env.TEMPORARY_FOLDER }}"
+          DOCUMENTATION=$(find ${{ env.TEMPORARY_FOLDER }}/* -maxdepth 1 -type d)
+          for i in ${DOCUMENTATION[@]}
+          do
+            if [[ "$(basename "$i")" == "man" ]]; then
+              echo "Skipping 'man' directory"
+              continue
+            fi
+            if [[ "$(basename "$i")" == "html" ]]; then
+              echo "Skipping 'html' directory"
+              continue
+            fi
+            echo "\$i = '$i'"
+            FINAL_PATH="$i/files/icon"
+            echo "Final path = $FINAL_PATH"
+            mkdir -p "$FINAL_PATH"
+            cp -rv ${{env.HTML_ICON_PATH}}/* "$FINAL_PATH"
+            ls -a -ls --color=auto "$FINAL_PATH"
+          done
+
+      - name: Generate latex if present
+        run: |
+          if [ -e "${{env.TEMPORARY_FOLDER}}/${{ env.OUTPUT_GENERATION }}/latex" ]; then
+            CWD=$(pwd)
+            cd "${{env.TEMPORARY_FOLDER}}/${{ env.OUTPUT_GENERATION }}/latex"
+            if [ -e "Makefile" ]; then
+              CONT_NAME=loxygene
+              COMMAND="cd /app && make"
+              # docker run -i -v "$(pwd)":"/app" --name "$CONT_NAME" ${{env.DOCKER_NAME}} /bin/bash -c "$COMMAND"
+              # docker stop "$CONT_NAME"
+              # docker rm "$CONT_NAME"
+            else
+              echo "No Makefile found, not generating anything"
+            fi
+            cd $CWD
+          else
+            echo "No latex folder found, not generating anything"
+          fi
+
+      - name: Inject install file if man is present
+        run: |
+          if [ -e "${{env.TEMPORARY_FOLDER}}/${{ env.OUTPUT_GENERATION }}/man" ]; then
+            CWD=$(pwd)
+            FILE_NAME="install_man.sh"
+            cd "${{env.TEMPORARY_FOLDER}}/${{ env.OUTPUT_GENERATION }}/man"
+            cp -v $CWD/${{env.MAN_INSTALL_PATH}} ./$FILE_NAME
+            chmod a+x $FILE_NAME
+            cd $CWD
+          else
+            echo "There was no man generated"
+          fi
+
+      - name: Inject external html ressources if html is present
+        run: |
+          if [ -e "${{env.TEMPORARY_FOLDER}}/${{ env.OUTPUT_GENERATION }}/html" ]; then
+            CWD=$(pwd)
+            cd "${{env.TEMPORARY_FOLDER}}/${{ env.OUTPUT_GENERATION }}/html"
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/files" ]; then
+              echo "Folder 'files' found, copying"
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/files .
+              if [ -e "$CWD/${{env.HTML_SRC_PATH}}/files/icon" ]; then
+                echo "Folder 'files/icon' found, copying"
+                cp -rv $CWD/${{env.HTML_SRC_PATH}}/files/icon/* .
+              fi
+              if [ -e "$CWD/${{env.HTML_SRC_PATH}}/files/icons" ]; then
+                echo "Folder 'files/icons' found, copying"
+                cp -rv $CWD/${{env.HTML_SRC_PATH}}/files/icons/* .
+              fi
+              if [ -e "$CWD/${{env.HTML_SRC_PATH}}/files/img" ]; then
+                echo "Folder 'img' found, copying"
+                cp -rv $CWD/${{env.HTML_SRC_PATH}}/files/img/* .
+              fi
+            fi
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/css" ]; then
+              echo "Folder 'css' found, copying"
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/css .
+            fi
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/js" ]; then
+              echo "Folder 'js' found, copying"
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/js .
+            fi
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/icon" ]; then
+              echo "Folder 'icon' found, copying"
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/icon .
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/icon/* .
+            fi
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/icons" ]; then
+              echo "Folder 'icons' found, copying"
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/icons .
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/icons/* .
+            fi
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/img" ]; then
+              echo "Folder 'img' found, copying"
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/img .
+              cp -rv $CWD/${{env.HTML_SRC_PATH}}/img/* .
+            fi
+            if [ -e "$CWD/${{env.HTML_SRC_PATH}}/${{env.HTML_SERVER_SPAWNER_NAME}}" ]; then
+              echo "File ${{env.HTML_SERVER_SPAWNER_NAME}} found, copying"
+              cp -v $CWD/${{env.HTML_SRC_PATH}}/${{env.HTML_SERVER_SPAWNER_NAME}} ./${{env.HTML_SERVER_SPAWNER_NAME}}
+              chmod a+x ${{env.HTML_SERVER_SPAWNER_NAME}}
+            fi
+            echo "Content of '$(pwd)':"
+            ls -lsa
+            echo "Returning to '$CWD'"
+            cd $CWD
+          else
+            echo "There was no html generated"
+          fi
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache@v5
+        with:
+          key: ${{ env.CACHE_KEY_CLEANED }}
+          path: ${{ env.TEMPORARY_FOLDER }}
+          enableCrossOsArchive: true
+
+  publish_html: # The critical steps will only be run if the flow was triggered by a push on the main branch
+    # environment variables that are for the github pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # The system on which we are running the actions
+    runs-on: ubuntu-latest
+    needs: clean_up_generation
+    if: success() && github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Get generated documentation
+        id: html-cache-restore
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
+        uses: actions/cache@v5
+        with:
+          key: ${{ env.CACHE_KEY_CLEANED }}
+          path: ${{ env.OUTPUT_GENERATION }}
+          enableCrossOsArchive: true
+          restore-keys: |
+            doxygen-cache-key
+            cache-key-doxygen
+            doxygen_cache_key
+            cache_key_doxygen
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Show restored content
+        run: |
+          echo "Displaying content of ${{env.OUTPUT_GENERATION}}:"
+          ls -aR ${{env.OUTPUT_GENERATION}}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          # Upload selected content
+          path: ${{ env.OUTPUT_GENERATION }}/${{ env.HTML_GENERATION }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  export_other_formats_when_present: # The critical steps will only be run if the flow was triggered by a tag.
+    runs-on: ubuntu-latest
+    needs: clean_up_generation
+    if: success()
+    env:
+      DOCUMENTATION_ZIP_NAME: documentation.zip
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get generated documentation
+        id: cache-documentation-restore
+        uses: actions/cache@v5
+        with:
+          key: ${{ env.CACHE_KEY_CLEANED }}
+          path: ${{ env.TEMPORARY_FOLDER }}
+          enableCrossOsArchive: true
+          restore-keys: |
+            doxygen-cache-key
+            cache-key-doxygen
+            doxygen_cache_key
+            cache_key_doxygen
+
+      - name: List directory content
+        run: |
+          ls -a
+
+      - name: determine e-mail
+        id: get-email
+        run: |
+          #Check if it's a push event
+          email="${{ github.event.pusher.email || '' }}"
+          if [ -z "$email" ]; then
+            email="${{ github.event.head_commit.author.email || '' }}"
+          fi
+          # Check if it's in a commit
+          if [ -z "$email" ]; then
+            email=$(git log -1 --pretty=format:%ae || true)
+          fi
+          # Last resort, is the e-mail of the actor in the public API?
+          if [ -z "$email" ]; then
+            email=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/users/${{ github.actor }}" \
+              | jq -r '.email')
+            [ "$email" = "null" ] && email=""
+          fi
+          # If all above fail, setting e-mail to null
+          [ -z "$email" ] && email="null"
+          echo "Resolved email: $email"
+          echo "trigger_email=$email" >> $GITHUB_OUTPUT
+
+      - name: Update author
+        run: |
+          git config --local user.name "${GITHUB_ACTOR}"
+          git config --local user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Get tag title
+        run: |
+          TAG_NAME="${{env.LATEST_TAG}}"
+          echo "Found file=$TAG_NAME"
+          COMMIT_TITLE="$(git tag -l --format='%(subject)' $TAG_NAME)"
+          if [ "$COMMIT_TITLE" = "" ]
+          then
+            COMMIT_TITLE="$(git log --format=%s -n 1)"
+          fi
+          COMMIT_TITLE="$TAG_NAME - $COMMIT_TITLE"
+          echo "Commit title: $COMMIT_TITLE"
+          echo "COMMIT_TITLE=$COMMIT_TITLE" >> $GITHUB_ENV
+
+      - name: Extract Tag Info
+        id: extract_tag_info
+        run: |
+          if [ "${{env.LATEST_TAG}}" = "" ]
+          then
+            echo "Tag name not found"
+            TAG_NAME="v0.0.0"
+          else
+            TAG_NAME="${{env.LATEST_TAG}}"
+          fi
+          echo "TAG NAME content = $TAG_NAME"
+          COMMIT_MESSAGE=$(git tag -l --format='%(contents)' $TAG_NAME)
+          echo "Commit message content = $COMMIT_MESSAGE"
+          if [[ -n "$COMMIT_MESSAGE" ]]; then
+            COMMIT_MESSAGE=$(git log --format=%s -n 1)
+          fi
+          if [ "$COMMIT_MESSAGE" = "" ]
+          then
+            COMMIT_MESSAGE="There is no message\n$(cat ./README.md)"
+          else
+            COMMIT_MESSAGE="${COMMIT_MESSAGE}\n$(cat ./README.md)"
+          fi
+          COMMIT_MESSAGE="${COMMIT_MESSAGE}\n\`\`\`log\n$(git log --format=%s -n 50)\n\`\`\`"
+          echo "Commit message final content = '$COMMIT_MESSAGE'"
+          # COMMIT_MESSAGE_ESCAPED=$(echo "$COMMIT_MESSAGE" | awk '{printf "%s\\n", $0}')
+          # echo "COMMIT_MESSAGE=$COMMIT_MESSAGE_ESCAPED" >> $GITHUB_ENV
+          {
+            echo "COMMIT_MESSAGE<<EOH"
+            echo -e "$COMMIT_MESSAGE"
+            echo EOH
+          } >> $GITHUB_ENV
+
+      - name: Restore the documentation to it's original directory
+        run: |
+          cp -rvf ${{env.TEMPORARY_FOLDER}}/* ${{env.OUTPUT_GENERATION}}
+
+      - name: Display current restored cache
+        run: |
+          ls -a
+          echo "content of ${{env.TEMPORARY_FOLDER}}"
+          ls -a ${{env.TEMPORARY_FOLDER}}
+          echo "content of ${{env.OUTPUT_GENERATION}}"
+          ls -a ${{env.OUTPUT_GENERATION}}
+
+      - name: Create archives
+        run: |
+          echo "Listing the source"
+          ls -a .
+          echo "Listing the content of the folders at the source"
+          ls -a ./*
+
+      - name: Install the zip binary if not present
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip
+
+      - name: Compressing the folders into archives
+        run: |
+          COMMAND_OPTIONS="-0 -r"
+          FORMATS=$(find ${{env.OUTPUT_GENERATION}} -maxdepth 1 -type d)
+          echo "Found folders in the documentation: $FORMATS"
+          echo "Generating archive of $(basename "${{env.OUTPUT_GENERATION}}")"
+          zip $COMMAND_OPTIONS ${{env.DOCUMENTATION_ZIP_NAME}} $(basename "${{env.OUTPUT_GENERATION}}")
+          for item in ${FORMATS[@]}
+          do
+            echo "Creating zip archive: '$item'"
+            zip $COMMAND_OPTIONS ${item}.zip $item
+          done
+
+      - name: Display generated archives
+        run: |
+          echo "Displaying files at the source of the repository"
+          ls -a --color=auto
+          echo "Displaying all zip files in ./"
+          ls -a --color=auto *.zip 
+          echo "Displaying all zip files in ${{env.OUTPUT_GENERATION}}/*.zip"
+          ls -a --color=auto ${{env.OUTPUT_GENERATION}}/*.zip
+
+      - name: Get folders of interest
+        id: output-files
+        run: |
+          DZN="${{env.DOCUMENTATION_ZIP_NAME}}"
+          OGRESULT="$(find ${{env.OUTPUT_GENERATION}} -maxdepth 1 -name '*.zip' -type f | tr '\n' ' ')"
+          echo "DZN=$DZN" >> "$GITHUB_OUTPUT" # Files of interest
+          echo "OGRESULT=$OGRESULT" >> "$GITHUB_OUTPUT" # Files of interest
+          echo "DZN=$DZN"
+          echo "OGRESULT=$OGRESULT"
+          FILE_LIST="$DZN $OGRESULT"
+          echo "Final file list='$FILE_LIST'"
+          echo "FOI=$(echo $FILE_LIST | tr '\n' ' ')" >> "$GITHUB_OUTPUT" # Files of interest
+
+      - name: Create a temporary load point
+        id: anchor-point
+        env:
+          FILES_OF_INTEREST: ${{ steps.output-files.outputs.FOI }}
+        run: |
+          echo "In temporary load point"
+          TEMPORARY_FOLDER=./tmp_data
+          FILES_OF_INTEREST="${{ steps.output-files.outputs.FOI }}"
+          echo "content of FILES_OF_INTEREST=$FILES_OF_INTEREST"
+          mkdir -p $TEMPORARY_FOLDER
+          for FILE in $FILES_OF_INTEREST; do
+            cp -v "./$FILE" "$TEMPORARY_FOLDER"
+          done
+          echo "Loop finished"
+          echo "Content of TEMPORARY_FOLDER:"
+          ls -a "$TEMPORARY_FOLDER"
+          echo "sending content to github output"
+          {
+            echo 'AP<<EOF'
+            find ./$TEMPORARY_FOLDER -maxdepth 1 -type f
+            echo EOF
+          } >> "$GITHUB_OUTPUT" # anchor point
+
+      - name: Publish binary as GitHub release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ steps.anchor-point.outputs.AP}}
+          name: ${{ env.COMMIT_TITLE }}
+          body: ${{ env.COMMIT_MESSAGE }}
+          draft: false
+          prerelease: false
+          make_latest: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  clean_created_cache:
+    name: Clear the cache generated during the build time
+    permissions: write-all
+    runs-on: ubuntu-latest
+    needs: export_other_formats_when_present
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Delete Created cache
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache list
+          gh cache delete --all
