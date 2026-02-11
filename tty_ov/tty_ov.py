@@ -1,14 +1,44 @@
-"""
-File in charge of emulating a basic tty to universalise the interface
+""" 
+# +==== BEGIN tty_ov =================+
+# LOGO:
+# ..@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# .@...........................#@
+# @############################.@
+# @...........................@.@
+# @..#######################..@.@
+# @.#########################.@.@
+# @.##>_#####################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @..#######################..@.@
+# @...........................@.@
+# @..+----+______________.....@.@
+# @..+....+______________+....@.@
+# @..+----+...................@.@
+# @...........................@.#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.
+# /STOP
+# PROJECT: tty_ov
+# FILE: tty_ov.py
+# CREATION DATE: 11-02-2026
+# LAST Modified: 19:38:51 11-02-2026
+# DESCRIPTION:
+# A module that emulates a few core functionalities of a tty (see the inner help for a list of functions).
+# /STOP
+# COPYRIGHT: (c) Henry Letellier
+# PURPOSE: This is the main implementation of the terminal and it's interraction, was coded in a week so the structure differs from my other python modules or more recent code.
+# // AR
+# +==== END tty_ov =================+
 """
 import os
 import sys
 import shutil
-import prompt_toolkit
 from typing import List, Dict
+import prompt_toolkit
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.history import InMemoryHistory
-from prettytable import PrettyTable
 from ask_question import AskQuestion
 from colourise_output import ColouriseOutput
 from .hl_ls import HLLs

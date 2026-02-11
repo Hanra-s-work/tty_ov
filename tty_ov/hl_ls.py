@@ -1,19 +1,45 @@
+""" 
+# +==== BEGIN tty_ov =================+
+# LOGO:
+# ..@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# .@...........................#@
+# @############################.@
+# @...........................@.@
+# @..#######################..@.@
+# @.#########################.@.@
+# @.##>_#####################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @.#########################.@.@
+# @..#######################..@.@
+# @...........................@.@
+# @..+----+______________.....@.@
+# @..+....+______________+....@.@
+# @..+----+...................@.@
+# @...........................@.#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.
+# /STOP
+# PROJECT: tty_ov
+# FILE: hl_ls.py
+# CREATION DATE: 11-02-2026
+# LAST Modified: 19:35:41 11-02-2026
+# DESCRIPTION:
+# A module that emulates a few core functionalities of a tty (see the inner help for a list of functions).
+# /STOP
+# COPYRIGHT: (c) Henry Letellier
+# PURPOSE: This is the file that contains the implementation attempt of the ls command.
+# // AR
+# +==== END tty_ov =================+
 """
-File containing the ls class
-"""
-
 import os
 import sys
+from typing import Union
 import stat
 import time
 import locale
-import shutil
-import prompt_toolkit
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.history import InMemoryHistory
 from prettytable import PrettyTable
-from ask_question import AskQuestion
-from colourise_output import ColouriseOutput
+
 
 class HLLs:
     """
@@ -181,7 +207,7 @@ class HLLs:
         print(table)
         return global_status
 
-    def ls(self, path: str or list = "") -> int:
+    def ls(self, path: Union[str, list] = "") -> int:
         """ 
         A basic loop manager to make this P.O.S POC a minimum functional and feel like the core of the real ls
         """
