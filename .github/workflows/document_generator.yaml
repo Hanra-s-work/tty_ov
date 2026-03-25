@@ -323,7 +323,7 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   export_other_formats_when_present: # The critical steps will only be run if the flow was triggered by a tag.
     runs-on: ubuntu-latest
