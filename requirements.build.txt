@@ -1,6 +1,6 @@
 setuptools ==82.0.1
 wheel ==0.46.3
-build ==1.4.0
+build ==1.4.2
 pytest ==8.4.2;python_version<="3.9"
 pytest ==9.0.2;python_version>="3.10"
 
