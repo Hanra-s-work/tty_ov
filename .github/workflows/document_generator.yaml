@@ -316,7 +316,7 @@ jobs:
           ls -aR ${{env.OUTPUT_GENERATION}}
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           # Upload selected content
           path: ${{ env.OUTPUT_GENERATION }}/${{ env.HTML_GENERATION }}
