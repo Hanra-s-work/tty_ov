@@ -60,7 +60,7 @@ dependencies = [
     "prettytable==3.17.0",
     "ask_question==1.2.12",
     "colourise-output==1.1.6",
-    "prompt-toolkit==3.0.52",
+    "prompt-toolkit==3.0.53",
 ]
 description = "A module that allows you to display text with a few boilers (i.e. put your text in a square for titles). It also allows to log to the terminal by wrapping around the logging library."
 license-files = ["LICENSE"]
